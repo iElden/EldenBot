@@ -3,6 +3,8 @@ import re
 import json
 from util.exception import ALEDException
 
+WEBHOOK_NAME = "EldenBotWook"
+
 def msg(message, error=False):
     if error : return("```diff\n- [ERREUR]\n{}```".format(message))
     else :     return("```diff\n{}```".format(message))
@@ -44,3 +46,11 @@ def write_json_file(file, obj):
             json.dump(obj, fd)
     except:
         raise ALEDException(f"Impossible d'écrire le fichier {file} !")
+
+async def get_webhook(channel: discord.TextChannel) -> discord.Webhook:
+    webhooks = await channel.webhooks()
+    for webhook in webhooks:
+        if webhook.name == WEBHOOK_NAME:
+            return webhook
+    webhook = await channel.create_webhook(name=WEBHOOK_NAME)
+    return webhook
