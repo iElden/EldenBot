@@ -135,9 +135,12 @@ class CmdJdrMith:
 
         wsh = gc.open_by_key(CHAR_SHEET[str(target.id)]).sheet1
         cell_list = wsh.range('K3:K6')
-        new_hp = int(cell_list[0].value) - damage
+        old_hp = int(cell_list[0].value)
+        new_hp = old_hp - damage
         if new_hp > int(cell_list[1].value):
             new_hp = int(cell_list[1].value)
+        if old_hp != 0 and new_hp < 0:
+            new_hp = 0
         print(cell_list)
         knock = cell_list[2].value == 'TRUE'
         injury = cell_list[3].value == 'TRUE'
