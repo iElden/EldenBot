@@ -139,7 +139,7 @@ class CmdJdrMith:
         new_hp = old_hp - damage
         if new_hp > int(cell_list[1].value):
             new_hp = int(cell_list[1].value)
-        if old_hp != 0 and new_hp < 0:
+        if old_hp > 0 and new_hp < 0:
             new_hp = 0
         print(cell_list)
         knock = cell_list[2].value == 'TRUE'
