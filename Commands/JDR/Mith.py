@@ -210,12 +210,14 @@ class CmdJdrMith:
         )))
         up = wsh.range(f"I1:I{len(ll)}")
         up = [gspread.Cell(cell.row, cell.col, to_update[cell.row]) for cell in up if cell.row in to_update]
-        wsh.update_cells(up)
+        if up:
+            wsh.update_cells(up)
         up = wsh.range(f"M1:M{len(ll)}")
         for cell in up:
             if cell.value == 'FALSE' or cell.value == 'TRUE':
                 cell.value = False
-        wsh.update_cells(up)
+        if up:
+            wsh.update_cells(up)
 
 
     async def cmd_td(self, *args, **kwargs): await self.cmd_takedamage(*args, **kwargs)
