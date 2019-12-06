@@ -22,12 +22,22 @@ class DraftMsg:
 
     @classmethod
     async def create(cls, channel, champions_list):
+        if len(cls._all_messages) >= 3:
+            await DraftMsg.del_first_message()
         self = cls(champions_list)
         self.msg = await channel.send(embed=discord.Embed(title="Chargement"))
         await self.update()
         for i in range(len(champions_list)):
             await self.msg.add_reaction(str(i) + chr(0xFE0F) + chr(0x20E3))
         cls._all_messages[self.msg.id] = self
+
+    @classmethod
+    async def del_first_message(cls):
+        msg_id ,draft = list(cls._all_messages.items())[0]
+        draft.logs.append("Les champions ont disparu")
+        draft.picked = range(10)
+        await draft.update()
+        del cls._all_messages[msg_id]
 
 
     async def update(self):

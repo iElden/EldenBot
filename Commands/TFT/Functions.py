@@ -1,4 +1,4 @@
-from .const import CHAMPIONS_PRICES
+from .const import CHAMPIONS_PRICES, CHANNEL_ID
 from .Database import Database
 from .Champions import Champion
 from .Team import Team
@@ -7,6 +7,9 @@ from .DraftMsg import DraftMsg
 import random
 import discord
 from typing import List
+import logging
+
+logger = logging.getLogger("TFT")
 
 
 class Functions:
@@ -28,6 +31,13 @@ class Functions:
         await Functions.add_champion(member, champion.name, channel=channel)
 
     @staticmethod
+    async def routine(*, client):
+        logger.debug("Entering TFT.routine")
+        if random.randint(1, 100) <= 75:
+            logger.info("Spawning TFT draft")
+            await Functions.spawn_draft(client.get_channel(CHANNEL_ID))
+
+    @staticmethod
     async def spawn_draft(channel):
         champion_list = Functions.random_champions(10)
         await DraftMsg.create(channel, champion_list)
@@ -39,10 +49,15 @@ class Functions:
         with Database() as db:  # type: Database
             champ_json = db.get_champions(member.id)
             champ_list = [Champion.build_from_json(i) for i in champ_json]  #type: List[Champion]
+
             champ_list.append(champion)
             team = Team(champ_list)
-            while True:
-                new_champ = team.mix_3_champs(champion)
-                if new_champ: await channel.send(f"{member.mention} a obtenu {champion.name} au niveau {champion.level} !")
-                else: break
+            await Functions.mix_if_3_champ(team, champion, channel=channel, member=member)
             db.update_champions(member.id, team.to_json())
+
+    @staticmethod
+    async def mix_if_3_champ(team, champion, *, channel, member):
+        new_champ = team.mix_3_champs(champion)
+        if new_champ:
+            await channel.send(f"{member.mention} a obtenu {new_champ.name} au niveau {new_champ.level} !")
+            await Functions.mix_if_3_champ(team, new_champ, channel=channel, member=member)

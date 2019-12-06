@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import discord
+import asyncio
 import logging
 import json
 import traceback
@@ -25,6 +26,9 @@ logger = logging.getLogger("Main")
 @client.event
 async def on_ready():
     logger.info("Connected")
+    while True:
+        await TFT_Functions.routine(client=client)
+        await asyncio.sleep(10)
 
 @client.event
 async def on_raw_reaction_add(payload):

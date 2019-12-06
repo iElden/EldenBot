@@ -57,3 +57,5 @@ CHAMPIONS_PRICES = {
     "Yasuo": 5,
     "Zed": 2
 }
+
+CHANNEL_ID = 507906776461475841
