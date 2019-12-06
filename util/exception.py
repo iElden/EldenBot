@@ -15,3 +15,6 @@ class ALEDException(BotError):
 
 class NotFound(BotError):
     """NotFound"""
+
+class Forbidden(BotError):
+    """NotFound"""

@@ -11,6 +11,7 @@ logger = logging.getLogger("CommandInitializer")
 logger.info("Loading commands")
 
 from .JDR import CmdJdr
+from .TFT.CmdTFT import CmdTFT
 from .deleteallmessage import CmdDeleteAllMessage
 from .help import CmdHelp
 from .info import CmdInfos
@@ -31,7 +32,7 @@ from LoupGarou.lg import CmdLg
 class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
               CmdVerif, CmdLolScore, CmdMusic, CmdModeration, CmdLg,
               CmdMoney, CmdInfos, CmdUseless, CmdHelp,
-              CmdJdr, CmdLoLQuizz):
+              CmdJdr, CmdLoLQuizz, CmdTFT):
     sleep = False
 
     @only_owner

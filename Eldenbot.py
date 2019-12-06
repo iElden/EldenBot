@@ -11,6 +11,10 @@ from Commands.link import send_to_linked
 from util.function import msg
 from util.exception import BotError
 
+#Event listener
+from Commands.TFT.Functions import Functions as TFT_Functions
+from util.DynamicEmbed import on_reaction_change
+
 if __name__ == '__main__':
     from Commands import Command
     command = Command()
@@ -21,6 +25,19 @@ logger = logging.getLogger("Main")
 @client.event
 async def on_ready():
     logger.info("Connected")
+
+@client.event
+async def on_raw_reaction_add(payload):
+    if payload.user_id == client.user.id:
+        return
+    try:
+        await TFT_Functions.on_champion_pick(payload, client=client)
+        await on_reaction_change(payload)
+    except BotError:
+        error = traceback.format_exc().split('\n')[-1] or traceback.format_exc().split('\n')[-2]
+        await client.get_user(payload.user_id).send(error[15:])
+
+
 
 @client.event
 async def on_message(m):
