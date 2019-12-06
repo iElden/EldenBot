@@ -28,7 +28,7 @@ async def on_ready():
     logger.info("Connected")
     while True:
         await TFT_Functions.routine(client=client)
-        await asyncio.sleep(60)
+        await asyncio.sleep(300)
 
 @client.event
 async def on_raw_reaction_add(payload):
