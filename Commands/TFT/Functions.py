@@ -33,7 +33,7 @@ class Functions:
     @staticmethod
     async def routine(*, client):
         logger.debug("Entering TFT.routine")
-        if random.randint(1, 100) <= 75:
+        if random.randint(1, 100) <= 5:
             logger.info("Spawning TFT draft")
             await Functions.spawn_draft(client.get_channel(CHANNEL_ID))
 
