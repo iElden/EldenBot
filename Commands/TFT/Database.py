@@ -60,7 +60,7 @@ class Database:
     def get_champions(self, discord_id : int) -> list:
         data = self.cursor.execute("SELECT champions FROM Users WHERE discord_id = ?", (discord_id,))
         json_str = data.fetchone()[0]
-        return sorted(json.loads(json_str), key=lambda x: x['level'] * 100 + (100 - ord(x['name'][0])), reverse=True)
+        return sorted(json.loads(json_str), key=lambda x: (-x['level'], x['name']))
 
     @add_user_if_not_exist(0)
     def get_gold(self, discord_id : int) -> int:

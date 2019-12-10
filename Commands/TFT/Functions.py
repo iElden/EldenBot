@@ -51,7 +51,7 @@ class Functions:
             champ_list = [Champion.build_from_json(i) for i in champ_json]  #type: List[Champion]
 
             champ_list.append(champion)
-            team = Team(champ_list)
+            team = Team(champ_list, member)
             await Functions.mix_if_3_champ(team, champion, channel=channel, member=member)
             db.update_champions(member.id, team.to_json())
 

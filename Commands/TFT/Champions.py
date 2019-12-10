@@ -1,5 +1,7 @@
 from abc import abstractmethod
 from typing import Dict, Any
+from constant.rgapi import CHAMP_NAME_TO_ID, CHAMP_ID_TO_EMOJI, CHAMP_NONE_EMOJI
+
 
 class Champion:
     @classmethod
@@ -16,6 +18,9 @@ class Champion:
 
     def to_json(self) -> Dict[str, Any]:
         return {'name': self.name, 'level': self.level}
+
+    def to_emoji(self) -> str:
+        return CHAMP_ID_TO_EMOJI.get(CHAMP_NAME_TO_ID.get(self.name, "0"), CHAMP_NONE_EMOJI)
 
     @abstractmethod
     def attack(self):

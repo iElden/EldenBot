@@ -1,6 +1,7 @@
 from util.decorator import only_owner
 from .Functions import Functions
 from .Database import Database
+from .Team import Team
 
 class CmdTFT:
     @only_owner
@@ -10,4 +11,5 @@ class CmdTFT:
     async def cmd_tftteam(self, *args, channel, member, **_):
         with Database() as db:
             champ_list = db.get_champions(member.id)
-        await channel.send('\n'.join([f"{i['name']}: niveau {i['level']}" for i in champ_list]))
+        team = Team.from_json(champ_list, member=member)
+        await channel.send(embed=team.to_embed())
