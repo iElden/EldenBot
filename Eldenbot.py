@@ -4,6 +4,7 @@ import asyncio
 import logging
 import json
 import traceback
+from sys import argv
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,6 +27,8 @@ logger = logging.getLogger("Main")
 @client.event
 async def on_ready():
     logger.info("Connected")
+    if len(argv) > 1 and argv[1] == '-d':
+        return
     while True:
         await TFT_Functions.routine(client=client)
         await asyncio.sleep(300)
