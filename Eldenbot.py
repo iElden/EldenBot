@@ -28,6 +28,7 @@ logger = logging.getLogger("Main")
 async def on_ready():
     logger.info("Connected")
     if len(argv) > 1 and argv[1] == '-d':
+        logger.warning("Program has been lunched with -d argument, exiting on_ready ...")
         return
     while True:
         await TFT_Functions.routine(client=client)
