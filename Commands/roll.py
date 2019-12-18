@@ -9,7 +9,7 @@ def roll_dice(nb, face):
     l = []
     for i in range(nb):
         l.append(random.randint(1,face))
-    return (l)
+    return l
 
 class Dice:
     def __init__(self, nb, faces, negative):

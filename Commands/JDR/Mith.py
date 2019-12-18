@@ -1,17 +1,20 @@
 import json
 import discord
 import gspread
-from random import randint
+import re
+from random import randint, choice as random_choice
 from oauth2client.service_account import ServiceAccountCredentials as sac
 from PIL import Image, ImageDraw, ImageFilter
 from io import BytesIO, BufferedIOBase
-from ..roll import roll
 
+from .roll_gif import SUCCES_GIF, FAIL_GIF
+from ..roll import roll
 from util.exception import InvalidArgs, NotFound, BotError
 from util.function import get_member
 from util.constant import POUBELLE_ID
 from util.decorator import refresh_google_token
-from typing import List
+from typing import List, Tuple
+import enum
 
 credentials = sac.from_json_keyfile_name("private/googlekey.json", ["https://spreadsheets.google.com/feeds"])
 gc = gspread.authorize(credentials)
@@ -21,6 +24,18 @@ with open("private/mith_sheets.json") as fd:
     CHAR_SHEET = json.load(fd)
 MJ_ID = 203934874204241921
 COMP_XP = {"Crédit": 4}
+
+# SHEET CONST
+
+COMP_NAME_COLUMN = 4
+COMP_SCORE_MAIN = 5
+COMP_SCORE_XPABLE = 9
+class COMP_LEVEL(enum.IntEnum):
+    NORMAL = 0
+    ADEPTE = 1
+    MAITRE = 2
+STR_TO_COMP_LEVEL = {"Novice": COMP_LEVEL.NORMAL, "Adepte": COMP_LEVEL.ADEPTE, "Maître": COMP_LEVEL.MAITRE}
+
 
 # BORDER CONST
 SIZE = 128
@@ -98,13 +113,61 @@ def xp_roll(line : List[str]) -> dict:
     return {"success": success, "crits": crits, "old_xp": xp, "new_xp": xp + xp_won, "xp_won": xp_won,
             "old_total": total, "new_total": min(total + xp_won, 100), "comp_name": comp_name, "roll": dice}
 
+async def roll_by_comp(comp, name, bonus,  *, member, message, channel):
+    """
+    Args:
+        comp (List[Tuple[str, int, COMP_LEVEL]]): comp sheet Tuple[comp_name, score]
+        name (str): comp name the player want roll
+        bonus (int): bonus/malus dice
+        member (discord.Member): discord member
+        message (discord.Message): discord message
+        channel (discord.Channel): discord channel
+    Returns: None
+    """
+    possibilities = [i for i in comp if i[0].startswith(name)]
+    if not possibilities:
+        raise NotFound("Compétence non trouvée dans la fiche de personnage")
+    if len(possibilities) > 1:
+        raise NotFound(f"Plusieurs compétence porte un nom similaire, conflit entre : {', '.join([i[0] for i in possibilities])}")
+    comp = possibilities[0]
+
+    r = roll(f"{1+abs(bonus)}d100")
+    rr = sum(r.results, [])
+    if len(rr) == 1:
+        final_dice = r.total
+    else:
+        final_dice = (min if bonus > 0 else max)(rr)
+    verdict = get_final_result(final_dice, comp)
+    em = discord.Embed(
+        title="Lancé de dés",
+        description=f"{member.mention} fait un jet de {comp[0]}, Il {r.intro_sentence()}\n\n{r.format_results()}\n\nDé final : **{final_dice}**",
+        colour=member.colour
+    ).set_footer(text=message.content).set_author(name=member.name, icon_url=member.avatar_url)
+    em.add_field(name="Résultat", value=f"```diff\n{verdict}```")
+    if verdict == "- Echec Critique":
+        em.set_image(url=random_choice(FAIL_GIF))
+    elif verdict == "+ Réussite Critique":
+        em.set_image(url=random_choice(SUCCES_GIF))
+    await channel.send(embed=em)
+
+def get_final_result(final_dice, comp):
+    if final_dice <= comp[1] // 5:
+        return "+ Réussite Critique"
+    if final_dice <= comp[1] // 2:
+        return "+ Réussite majeure"
+    if final_dice <= comp[1]:
+        return "+ Réussite"
+    if final_dice > 80 + comp[1] // 5:
+        return "- Echec Critique"
+    return "- Echec"
+
 
 class CmdJdrMith:
     @refresh_google_token(credentials, gc)
     async def cmd_takedamage(self, *args : List[str], message, member, channel, guild, client, heal=False, **_):
         """
         Args:
-            *args (List[str]):
+            *args (str):
             member (discord.Member):
             channel (discord.Channel):
             guild (discord.Guild):
@@ -186,6 +249,36 @@ class CmdJdrMith:
             pass
 
     @refresh_google_token(credentials, gc)
+    async def cmd_mithroll(self, *args, message, channel, member, **_):
+        target = member
+        if not args:
+            raise InvalidArgs("Usage: /mithroll {comp_name} [+/-][nombre]")
+        try:
+            wsh = gc.open_by_key(CHAR_SHEET[str(target.id)]).sheet1
+        except:
+            raise BotError("Impossible d'ouvrir la fiche de personnage du membre")
+        ll = wsh.get_all_values()  # type: List[List[str]]
+        comp = []  # type: List[Tuple[str, int, COMP_LEVEL]]
+        for line in range(2, 10):
+            comp.append((ll[line][COMP_NAME_COLUMN], int(ll[line][COMP_SCORE_MAIN]), COMP_LEVEL.NORMAL))
+        comp_level = COMP_LEVEL.NORMAL
+        line = 13
+        while ll[line][COMP_NAME_COLUMN] and ll[line][COMP_SCORE_XPABLE]:
+            if not ll[line][COMP_SCORE_XPABLE].isnumeric():
+                try:
+                    comp_level = STR_TO_COMP_LEVEL[ll[line][COMP_SCORE_XPABLE]]
+                except KeyError:
+                    raise BotError(f"Unexcepted value when parsing comp score, got \"{ll[line][COMP_SCORE_XPABLE]}\" at line {line} ({ll[line][COMP_NAME_COLUMN]})")
+            else:
+                comp.append((ll[line][COMP_NAME_COLUMN], int(ll[line][COMP_SCORE_XPABLE]), comp_level))
+            line += 1
+        if re.match(r"[+-]\d+", args[-1]):
+            name, bonus = ' '.join(args[:-1]), int(args[-1])
+        else:
+            name, bonus = ' '.join(args), 0
+        await roll_by_comp(comp, name, bonus, message=message, channel=channel, member=member)
+
+    @refresh_google_token(credentials, gc)
     async def cmd_xproll(self, *args, member, channel, **_):
         target = member
         try:
@@ -226,3 +319,4 @@ class CmdJdrMith:
     async def cmd_td(self, *args, **kwargs): await self.cmd_takedamage(*args, **kwargs)
     async def cmd_hd(self, *args, **kwargs): await self.cmd_takedamage(*args, **kwargs, heal=True)
     async def cmd_gr(self, *args, **kwargs): await self.cmd_gmroll(*args, **kwargs)
+    async def cmd_mr(self, *args, **kwargs): await self.cmd_mithroll(*args, **kwargs)
