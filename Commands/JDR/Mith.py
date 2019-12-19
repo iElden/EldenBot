@@ -129,18 +129,21 @@ async def roll_by_comp(comp, name, bonus,  *, member, message, channel):
         raise NotFound("Compétence non trouvée dans la fiche de personnage")
     if len(possibilities) > 1:
         raise NotFound(f"Plusieurs compétence porte un nom similaire, conflit entre : {', '.join([i[0] for i in possibilities])}")
-    comp = possibilities[0]
+    comp_name, comp_score, comp_level = possibilities[0]
 
-    r = roll(f"{1+abs(bonus)}d100")
+    if comp_level >= COMP_LEVEL.ADEPTE:
+        comp_score = min(comp_score + 10, 99)
+    total_bonus = bonus + (comp_level == COMP_LEVEL.MAITRE)
+    r = roll(f"{1+ abs(total_bonus)}d100")
     rr = sum(r.results, [])
     if len(rr) == 1:
         final_dice = r.total
     else:
-        final_dice = (min if bonus > 0 else max)(rr)
-    verdict = get_final_result(final_dice, comp)
+        final_dice = (min if total_bonus > 0 else max)(rr)
+    verdict = get_final_result(final_dice, comp_score)
     em = discord.Embed(
         title="Lancé de dés",
-        description=f"{member.mention} fait un jet de {comp[0]}, Il {r.intro_sentence()}\n\n{r.format_results()}\n\nDé final : **{final_dice}**",
+        description=f"{member.mention} fait un jet de {comp_name}, Il {r.intro_sentence()}\n\n{r.format_results()}\n\nDé final : **{final_dice}** / {comp_score}",
         colour=member.colour
     ).set_footer(text=message.content).set_author(name=member.name, icon_url=member.avatar_url)
     em.add_field(name="Résultat", value=f"```diff\n{verdict}```")
@@ -150,14 +153,14 @@ async def roll_by_comp(comp, name, bonus,  *, member, message, channel):
         em.set_image(url=random_choice(SUCCES_GIF))
     await channel.send(embed=em)
 
-def get_final_result(final_dice, comp):
-    if final_dice <= comp[1] // 5:
+def get_final_result(final_dice: int, score: int) -> str:
+    if final_dice <= score // 5:
         return "+ Réussite Critique"
-    if final_dice <= comp[1] // 2:
+    if final_dice <= score // 2:
         return "+ Réussite majeure"
-    if final_dice <= comp[1]:
+    if final_dice <= score:
         return "+ Réussite"
-    if final_dice > 80 + comp[1] // 5:
+    if final_dice > 80 + score // 5:
         return "- Echec Critique"
     return "- Echec"
 
