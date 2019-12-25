@@ -11,6 +11,12 @@ ZELDA_AVATAR_URL = "https://cdn.discordapp.com/attachments/431225592189288459/64
 MAGIC_CARPET_AVATAR_URL = "https://cdn.discordapp.com/attachments/431225592189288459/645369953956003850/Tapis_volant.png"
 
 class CmdUseless:
+    async def cmd_getroleid(self, *args, channel, guild, **_):
+        role = discord.utils.get(guild.roles, name=' '.join(args))
+        if not role:
+            await channel.send("Role non trouvé")
+        await channel.send(str(role.id))
+
     async def cmd_thanossnap(self, channel, guild, **_):
         vanished, survivors = [], []
         for user in guild.members:
