@@ -1,17 +1,26 @@
 import discord
 from util.exception import NotFound
 
+from discord import TextChannel
+
 helper = {
+    "MithJDR": {
+        "/mithroll ou /mr": "``{compétence} [+/-][bonus/malus]`` Lance un dé pour la compétence donnée",
+        "/mroll ou /gr": "Comme le /roll mais envoie une copie du lancé au MJ (voir /help Roll)",
+        "/xproll": "Effectue tout les jets d'XP du personnage",
+        "/takedamage ou /td": "``[joueur] {Roll expr.}`` Fait perdre le résultat de l'expression au joueur",
+        "/healdamage ou /hd": "``[joueur] {Roll expr.}`` Comme /takedamage mais soigne à la place"
+    },
     "Moderation": {
         "/mdelete": "``{message_id} [!][raison]`` Supprime le message, si un ! est donné avant la raison, une notification est envoyé à la personne",
         "/mmove": "``{message_id} {channel_id} [!][raison]`` Déplace le message donné vers le channel donné, si un ! est donné avant la raison, une notification est envoyé à la personne",
         "/mmoveafter": "``{message_id} {channel_id} [!][raison]`` Déplace tout les message après celui donné (inclu) dans le channel x, si un ! est donné avant la raison, une (et une seule) notification est envoyé à la personne",
     },
-    "Money": {
-        "/coin": "``[member]`` Affiche le nombre de compte de `member`, si `member` n'est pas donné, affiche votre compte",
-        "/daily": "Récupère votre somme quotidienne",
-        "/pay": "``{value} {member}`` Envoie `valeur` coins à `member`",
-    },
+#    "Money": {
+#        "/coin": "``[member]`` Affiche le nombre de compte de `member`, si `member` n'est pas donné, affiche votre compte",
+#        "/daily": "Récupère votre somme quotidienne",
+#        "/pay": "``{value} {member}`` Envoie `valeur` coins à `member`",
+#    },
     "Music": {
         "/music {lien Youtube}" : "Ajoute la musique à la queue",
         "/music search": "``{query}`` Checrche sur Youtube et joue le premier résultat trouvé",
@@ -25,7 +34,10 @@ helper = {
         "/roledel": "``{role}`` Supprime le role de la liste des roles joinable",
         "/rolelist": "Affiche la liste des roles joinable",
     },
-    "RiotAPI": {
+    "Quizz": {
+        "/lolquizz": "Retrouvez à quel champion de LoL le sort donné appartient"
+    },
+    "RiotAPI (claqué au sol)": {
         '/verif' : "Affiche les informations pour la vérification (nécessaire pour certaines commandes)",
         '/afkmeter' : "Affiche le nombre d'AFK de l'invocateur sur les 100 dernières games.",
         '/kikimeter' : "Permet de savoir .... bref le nom de la commande quoi.",
@@ -46,10 +58,14 @@ helper = {
         "/bash": "``bash`` éxecute le code donné dans bash",
         "/importverif": "Importe les comptes vérifié sur un serveur officiel"
     },
+    "TFT": {
+        "/tftsell": "``{champion_name} {level}`` vend un champion"
+    },
     "Useless": {
         '/thanossnap': "Affiche un simulateur de thanos snap sur le serveur",
         "/latex": "``{commande latex}`` affiche une image formaté par LaTeX",
         "/memberinfo": "``[member]`` affiche les informations d'un membre",
+        "/getroleid": "``{role name}``Renvoie l'id du role"
     },
 }
 
