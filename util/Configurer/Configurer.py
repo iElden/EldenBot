@@ -50,6 +50,7 @@ class Configurer:
             pattern (Dict[str, str]): Dict[option_name, option_type]
             channel (discord.Channel): Discord Channel when the prompt will open
             member (discord.User): Discord User who can edit the configuration
+            client (discord.Client): Discord Client object
         Returns:
             Configurer: embed who can be edited
         """
@@ -149,12 +150,15 @@ class Configurer:
             await channel.send(message)
 
     async def save(self, file=None, channel=None):
+        self.raw_save(file)
+        await self.logging("La configuration a bien été sauvegardé !", channel=channel)
+
+    def raw_save(self, file=None):
         if file is None:
             file = self.file
         with open(file, 'w') as fd:
             logger.info(f"Saving to {file}")
             json.dump(self.to_json(), fd)
-        await self.logging("La configuration a bien été sauvegardé !", channel=channel)
 
     def to_json(self):
         return {k: v.to_json() for k, v in self.params.items()}
