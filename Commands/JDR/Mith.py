@@ -6,15 +6,16 @@ from random import randint, choice as random_choice
 from oauth2client.service_account import ServiceAccountCredentials as sac
 from PIL import Image, ImageDraw, ImageFilter
 from io import BytesIO, BufferedIOBase
+from typing import List, Tuple
+import enum
 
 from .roll_gif import SUCCES_GIF, FAIL_GIF
 from ..roll import roll
-from util.exception import InvalidArgs, NotFound, BotError
+from util.exception import InvalidArgs, NotFound, BotError, Forbidden
 from util.function import get_member
 from util.constant import POUBELLE_ID
 from util.decorator import refresh_google_token
-from typing import List, Tuple
-import enum
+from Config import GlobalConfig
 
 credentials = sac.from_json_keyfile_name("private/googlekey.json", ["https://spreadsheets.google.com/feeds"])
 gc = gspread.authorize(credentials)
@@ -46,6 +47,14 @@ MAX_X = SIZE * 6
 BORDER_WIDTH = 8
 START_X = MIN_X + BORDER_WIDTH
 END_X = MAX_X - BORDER_WIDTH
+
+def user_can_use_command(func):
+    async def wrapper(self, *args, member, **kwargs):
+        if GlobalConfig.MithJDR.can_use_command(member.id) or kwargs["force"]:
+            await func(self, *args, member=member, **kwargs)
+        else:
+            raise Forbidden("Only player can use these command")
+    return wrapper
 
 
 async def create_image(avatar_url, current_hp, max_hp, injury=False, knock=False):
@@ -166,6 +175,7 @@ def get_final_result(final_dice: int, score: int) -> str:
 
 
 class CmdJdrMith:
+    @user_can_use_command
     @refresh_google_token(credentials, gc)
     async def cmd_takedamage(self, *args : List[str], message, member, channel, guild, client, heal=False, **_):
         """
@@ -233,7 +243,7 @@ class CmdJdrMith:
         cell_list[0].value = new_hp
         wsh.update_cell(3, 11, new_hp)
 
-
+    @user_can_use_command
     async def cmd_gmroll(self, *args, message, member, client,**_):
         if not args or not args[0]:
             args = "1d100"
@@ -251,6 +261,7 @@ class CmdJdrMith:
         except discord.HTTPException:
             pass
 
+    @user_can_use_command
     @refresh_google_token(credentials, gc)
     async def cmd_mithroll(self, *args, message, channel, member, **_):
         target = member
@@ -281,6 +292,7 @@ class CmdJdrMith:
             name, bonus = ' '.join(args), 0
         await roll_by_comp(comp, name, bonus, message=message, channel=channel, member=member)
 
+    @user_can_use_command
     @refresh_google_token(credentials, gc)
     async def cmd_xproll(self, *args, member, channel, **_):
         target = member
@@ -318,6 +330,11 @@ class CmdJdrMith:
         if up:
             wsh.update_cells(up)
 
+
+    async def cmd_mithcfg(self, *args, channel, member, client, force, **kwargs):
+        if member.id != GlobalConfig.MithJDR.mj and not force:
+            raise Forbidden("Seulement le MJ peut éditer les configs")
+        await GlobalConfig.MithJDR.open_editor(channel, member, client)
 
     async def cmd_td(self, *args, **kwargs): await self.cmd_takedamage(*args, **kwargs)
     async def cmd_hd(self, *args, **kwargs): await self.cmd_takedamage(*args, **kwargs, heal=True)
