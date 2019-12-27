@@ -36,8 +36,12 @@ class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
     sleep = False
 
     @only_owner
-    async def cmd_sleep(self, *_, channel, **__):
+    async def cmd_sleep(self, *_, channel, client, **__):
         self.sleep = not self.sleep
+        if self.sleep:
+            await client.change_presence(status=discord.Status.dnd)
+        else:
+            await client.change_presence(status=discord.Status.online)
         await channel.send("switch sleep to {}".format(self.sleep))
 
     @only_owner
@@ -63,3 +67,12 @@ class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
 
     async def cmd_apython(self, *args, **kwargs):
         await self.python(*args, **kwargs, asyncrone=True)
+
+    @only_owner
+    async def cmd_delmsg(self, *args, message, client, **_):
+        target_chan = client.get_channel(int(args[0])) # type: discord.TextChannel
+        await (await target_chan.fetch_message(int(args[1]))).delete()
+        try:
+            await message.delete()
+        except:
+            pass
