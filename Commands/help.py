@@ -6,10 +6,11 @@ from discord import TextChannel
 helper = {
     "MithJDR": {
         "/mithroll ou /mr": "``{compétence} [+/-][bonus/malus]`` Lance un dé pour la compétence donnée",
-        "/mroll ou /gr": "Comme le /roll mais envoie une copie du lancé au MJ (voir /help Roll)",
+        "/gmroll ou /gr": "Comme le /roll mais envoie une copie du lancé au MJ (voir /help Roll)",
         "/xproll": "Effectue tout les jets d'XP du personnage",
         "/takedamage ou /td": "``[joueur] {Roll expr.}`` Fait perdre le résultat de l'expression au joueur",
-        "/healdamage ou /hd": "``[joueur] {Roll expr.}`` Comme /takedamage mais soigne à la place"
+        "/healdamage ou /hd": "``[joueur] {Roll expr.}`` Comme /takedamage mais soigne à la place",
+        "/mithcfg": "Ouvre le panneau de config pour le module"
     },
     "Moderation": {
         "/mdelete": "``{message_id} [!][raison]`` Supprime le message, si un ! est donné avant la raison, une notification est envoyé à la personne",
@@ -59,6 +60,7 @@ helper = {
         "/importverif": "Importe les comptes vérifié sur un serveur officiel"
     },
     "TFT": {
+         "/tftteam": "Affiche les champions que vous possédez",
         "/tftsell": "``{champion_name} {level}`` vend un champion"
     },
     "Useless": {
