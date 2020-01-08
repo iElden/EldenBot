@@ -29,7 +29,7 @@ COMP_XP = {"Crédit": 4}
 # SHEET CONST
 
 COMP_NAME_COLUMN = 4
-COMP_SCORE_MAIN = 5
+COMP_SCORE_MAIN = 8
 COMP_SCORE_XPABLE = 9
 class COMP_LEVEL(enum.IntEnum):
     NORMAL = 0
@@ -110,7 +110,6 @@ async def create_image(avatar_url, current_hp, max_hp, injury=False, knock=False
     return r
 
 def xp_roll(line : List[str]) -> dict:
-    print(line)
     comp_name = line[4]
     xp = int(line[8]) if line[8] else 0
     total = int(line[9]) if line[9] else 0
@@ -210,14 +209,13 @@ class CmdJdrMith:
             damage = -damage
 
         wsh = gc.open_by_key(CHAR_SHEET[str(target.id)]).sheet1
-        cell_list = wsh.range('K3:K6')
+        cell_list = wsh.range('L3:L6')
         old_hp = int(cell_list[0].value)
         new_hp = old_hp - damage
         if new_hp > int(cell_list[1].value):
             new_hp = int(cell_list[1].value)
         if old_hp > 0 and new_hp < 0:
             new_hp = 0
-        print(cell_list)
         knock = cell_list[2].value == 'TRUE'
         injury = cell_list[3].value == 'TRUE'
 
@@ -241,7 +239,7 @@ class CmdJdrMith:
         await msg.edit(embed=em)
 
         cell_list[0].value = new_hp
-        wsh.update_cell(3, 11, new_hp)
+        wsh.update_cell(3, 12, new_hp)
 
     @user_can_use_command
     async def cmd_gmroll(self, *args, message, member, client,**_):
