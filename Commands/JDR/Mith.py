@@ -139,8 +139,6 @@ async def roll_by_comp(comp, name, bonus,  *, member, message, channel):
         raise NotFound(f"Plusieurs compétence porte un nom similaire, conflit entre : {', '.join([i[0] for i in possibilities])}")
     comp_name, comp_score, comp_level = possibilities[0]
 
-    if comp_level >= COMP_LEVEL.ADEPTE:
-        comp_score = min(comp_score + 10, 99)
     total_bonus = bonus + (comp_level == COMP_LEVEL.MAITRE)
     r = roll(f"{1+ abs(total_bonus)}d100")
     rr = sum(r.results, [])
