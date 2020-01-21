@@ -144,14 +144,19 @@ async def roll_by_comp(comp, name, bonus,  *, member, message, channel):
     total_bonus = bonus + (comp_level == COMP_LEVEL.MAITRE)
     r = roll(f"{1+ abs(total_bonus)}d100")
     rr = sum(r.results, [])
+    old_dice = ""
     if len(rr) == 1:
         final_dice = r.total
     else:
         final_dice = (min if total_bonus > 0 else max)(rr)
+    if comp_level >= COMP_LEVEL.ADEPTE:
+        old_dice = f"~~{final_dice}~~ "
+        final_dice -= 10
     verdict = get_final_result(final_dice, comp_score)
     em = discord.Embed(
         title="Lancé de dés",
-        description=f"{member.mention} fait un jet de {comp_name}, Il {r.intro_sentence()}\n\n{r.format_results()}\n\nDé final : **{final_dice}** / {comp_score}",
+        description=f"{member.mention} fait un jet de {comp_name}, Il {r.intro_sentence()}\n\n{r.format_results()}\n\n" +
+                    f"Dé final : {old_dice}**{final_dice}** / {comp_score}",
         colour=member.colour
     ).set_footer(text=message.content).set_author(name=member.name, icon_url=member.avatar_url)
     em.add_field(name="Résultat", value=f"```diff\n{verdict}```")
