@@ -14,5 +14,5 @@ class CmdTFT:
         team = Team.from_json(champ_list, member=member)
         await channel.send(embed=team.to_embed())
 
-    async def cmd_tftssell(self, *args, channel, member, **_):
+    async def cmd_tftsell(self, *args, channel, member, **_):
         await Functions.sell_champ(*args, channel=channel, member=member)
