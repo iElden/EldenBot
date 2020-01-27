@@ -81,6 +81,7 @@ async def on_message(m):
                                 client=client, channel=m.channel, guild=m.guild)
     elif client.user in m.mentions and m.author != client.user:
         await random_message(client, m)
+    await command.pnj_manager_on_message(m)
     await send_to_linked(client, m)
 
 

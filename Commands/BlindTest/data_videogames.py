@@ -19,7 +19,8 @@ VIDEO_GAMES_DATA = {
 
     "https://www.youtube.com/watch?v=A3BTZDQEPn4": [
         ["kirby"],
-        ["super star"]
+        ["super star"],
+        ["marx"]
     ],
 
     "https://www.youtube.com/watch?v=0hEYvdMoF2g": [
@@ -30,7 +31,7 @@ VIDEO_GAMES_DATA = {
 
     "https://www.youtube.com/watch?v=-08HBo_f9EA": [
         ["zelda"],
-        ["fout sword"],
+        ["four sword"],
         ["title"]
     ],
 
@@ -164,5 +165,10 @@ VIDEO_GAMES_DATA = {
         ["league of legends"],
         ["champ select"],
         ["blind"]
+    ],
+    "https://www.youtube.com/watch?v=C2EOuzWSDE8": [
+        ["super smash bros"],
+        ["melee"],
+        ["break the target"]
     ]
 }
