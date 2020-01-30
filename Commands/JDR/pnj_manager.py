@@ -17,7 +17,7 @@ class SHEET_COL(IntEnum):
 logger = logging.getLogger("PNJ Manager")
 
 class GDocDB:
-    creds = ServiceAccountCredentials.from_json_keyfile_name("private/google", ["https://spreadsheets.google.com/feeds"])
+    creds = ServiceAccountCredentials.from_json_keyfile_name("private/googlekey.json", ["https://spreadsheets.google.com/feeds"])
     gc = gspread.authorize(creds)
 
     def __init__(self):
@@ -55,7 +55,6 @@ async def pnj_say(message: discord.Message):
     ll = gdb[message.guild.id]
     if ll is None:
         return
-    webhook = await get_webhook(message.channel)
     pnj, content = message.content.split('\n', 1)
     pnj = pnj[2:]
     if pnj:
@@ -64,6 +63,11 @@ async def pnj_say(message: discord.Message):
         line = await get_pnj(ll, "univers")
     if not line:
         await message.channel.send("Le PNJ {} n'a pas été trouvé".format(pnj))
+    if line[SHEET_COL.OWNER_ID] != str(message.author.id) and not message.channel.permissions_for(message.author).manage_messages:
+        await message.channel.send("Vous n'avez pas la permission d'utiliser ce personnage\n"
+                                   "Vous devez être le posseseur du personnage ou avoir la permission \"Gérer les messages\"")
+        return
+    webhook = await get_webhook(message.channel)
     await webhook.send(content,
                        username="{}{}".format(line[SHEET_COL.NAME], f" ({line[SHEET_COL.GROUP]})" if line[SHEET_COL.GROUP] else ""),
                        avatar_url=line[SHEET_COL.IMAGE_URL])
