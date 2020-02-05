@@ -28,6 +28,7 @@ logger = logging.getLogger("Main")
 async def on_ready():
     logger.info("Connected")
     if len(argv) > 1 and argv[1] == '-d':
+        await client.change_presence(status=discord.Status.dnd, activity=discord.Game("In debug mode..."))
         logger.warning("Program has been lunched with -d argument, exiting on_ready ...")
         return
     while True:
@@ -66,7 +67,7 @@ async def on_message(m):
         try:
             logger.info(f"{member} used command {m.content}")
             await function(*args, message=m, member=member, force=force, cmd=cmd,
-                           client=client, channel=m.channel, guild=m.guild)
+                           client=client, channel=m.channel, guild=m.guild, content=' '.join(args))
         except BotError:
             error = traceback.format_exc().split('\n')[-1] or traceback.format_exc().split('\n')[-2]
             await m.channel.send(error[15:])
@@ -78,7 +79,7 @@ async def on_message(m):
     if m.content.startswith(f"<@{client.user.id}> play"):
         args = m.content.split(' ')[2:]
         await command.cmd_music(*args, message=m, member=m.author, force=False, cmd=None,
-                                client=client, channel=m.channel, guild=m.guild)
+                                client=client, channel=m.channel, guild=m.guild, content=m.content)
     elif client.user in m.mentions and m.author != client.user:
         await random_message(client, m)
     await command.pnj_manager_on_message(m)

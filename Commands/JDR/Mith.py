@@ -109,6 +109,25 @@ async def create_image(avatar_url, current_hp, max_hp, injury=False, knock=False
     r.seek(0)
     return r
 
+def parse_competences(wsh : gspread.Worksheet):
+    ll = wsh.get_all_values()  # type: List[List[str]]
+    comp = []  # type: List[Tuple[str, int, COMP_LEVEL]]
+    for line in range(2, 10):
+        comp.append((ll[line][COMP_NAME_COLUMN].strip().lower(), int(ll[line][COMP_SCORE_MAIN]), COMP_LEVEL.NORMAL))
+    comp_level = COMP_LEVEL.NORMAL
+    line = 13
+    while ll[line][COMP_NAME_COLUMN] and ll[line][COMP_SCORE_XPABLE]:
+        if not ll[line][COMP_SCORE_XPABLE].isnumeric():
+            try:
+                comp_level = STR_TO_COMP_LEVEL[ll[line][COMP_SCORE_XPABLE]]
+            except KeyError:
+                raise BotError(
+                    f"Unexcepted value when parsing comp score, got \"{ll[line][COMP_SCORE_XPABLE]}\" at line {line} ({ll[line][COMP_NAME_COLUMN]})")
+        else:
+            comp.append((ll[line][COMP_NAME_COLUMN].strip().lower(), int(ll[line][COMP_SCORE_XPABLE]), comp_level))
+        line += 1
+    return comp
+
 def xp_roll(line : List[str]) -> dict:
     comp_name = line[4]
     xp = int(line[8]) if line[8] else 0
@@ -134,7 +153,7 @@ async def roll_by_comp(comp, name, bonus,  *, member, message, channel):
     """
     possibilities = [i for i in comp if i[0].startswith(name)]
     if not possibilities:
-        raise NotFound("Compétence non trouvée dans la fiche de personnage")
+        raise NotFound(f"Compétence \"{name}\"non trouvée dans la fiche de personnage")
     if len(possibilities) > 1:
         raise NotFound(f"Plusieurs compétence porte un nom similaire, conflit entre : {', '.join([i[0] for i in possibilities])}")
     comp_name, comp_score, comp_level = possibilities[0]
@@ -264,34 +283,27 @@ class CmdJdrMith:
 
     @user_can_use_command
     @refresh_google_token(credentials, gc)
-    async def cmd_mithroll(self, *args, message, channel, member, **_):
-        target = member
+    async def cmd_mithroll(self, *args, message, channel, member, guild, content, **_):
+        if '#' in content:
+            content, target_query = content.split('#', 1)
+            target = get_member(guild, target_query.strip())
+        else:
+            target = member
         if not args:
             raise InvalidArgs("Usage: /mithroll {comp_name} [+/-][nombre]")
         try:
             wsh = gc.open_by_key(CHAR_SHEET[str(target.id)]).sheet1
         except:
             raise BotError("Impossible d'ouvrir la fiche de personnage du membre")
-        ll = wsh.get_all_values()  # type: List[List[str]]
-        comp = []  # type: List[Tuple[str, int, COMP_LEVEL]]
-        for line in range(2, 10):
-            comp.append((ll[line][COMP_NAME_COLUMN], int(ll[line][COMP_SCORE_MAIN]), COMP_LEVEL.NORMAL))
-        comp_level = COMP_LEVEL.NORMAL
-        line = 13
-        while ll[line][COMP_NAME_COLUMN] and ll[line][COMP_SCORE_XPABLE]:
-            if not ll[line][COMP_SCORE_XPABLE].isnumeric():
-                try:
-                    comp_level = STR_TO_COMP_LEVEL[ll[line][COMP_SCORE_XPABLE]]
-                except KeyError:
-                    raise BotError(f"Unexcepted value when parsing comp score, got \"{ll[line][COMP_SCORE_XPABLE]}\" at line {line} ({ll[line][COMP_NAME_COLUMN]})")
-            else:
-                comp.append((ll[line][COMP_NAME_COLUMN], int(ll[line][COMP_SCORE_XPABLE]), comp_level))
-            line += 1
-        if re.match(r"[+-]\d+", args[-1]):
-            name, bonus = ' '.join(args[:-1]), int(args[-1])
+        comp = parse_competences(wsh)
+        re_result = re.search(r".*([+-])\s*(\d+)\s*$", content)
+        if re_result:
+            sign_char = re_result.group(1)
+            name = content.split(sign_char, 1)[0]
+            bonus = int(sign_char + re_result.group(2))
         else:
-            name, bonus = ' '.join(args), 0
-        await roll_by_comp(comp, name, bonus, message=message, channel=channel, member=member)
+            name, bonus = content, 0
+        await roll_by_comp(comp, name.strip().lower(), bonus, message=message, channel=channel, member=target)
 
     @user_can_use_command
     @refresh_google_token(credentials, gc)
