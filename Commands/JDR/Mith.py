@@ -29,7 +29,7 @@ COMP_XP = {"Crédit": 4}
 # SHEET CONST
 
 COMP_NAME_COLUMN = 4
-COMP_SCORE_MAIN = 8
+COMP_SCORE_MAIN = 9
 COMP_SCORE_XPABLE = 9
 class COMP_LEVEL(enum.IntEnum):
     NORMAL = 0
@@ -212,7 +212,7 @@ class CmdJdrMith:
             damage = -damage
 
         wsh = gc.open_by_key(CHAR_SHEET[str(target.id)]).sheet1
-        cell_list = wsh.range('L3:L6')
+        cell_list = wsh.range('P3:P6')
         old_hp = int(cell_list[0].value)
         new_hp = old_hp - damage
         if new_hp > int(cell_list[1].value):
