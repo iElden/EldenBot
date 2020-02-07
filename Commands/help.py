@@ -6,6 +6,7 @@ from discord import TextChannel
 helper = {
     "MithJDR": {
         "/mithroll ou /mr": "``{compétence} [+/-][bonus/malus]`` Lance un dé pour la compétence donnée",
+        "/mrv": "``{compétence[+/-][bonus/malus]}[|compétence[+/-][bonus/malus]] {cible}`` Lance un dé en mode versus",
         "/gmroll ou /gr": "Comme le /roll mais envoie une copie du lancé au MJ (voir /help Roll)",
         "/xproll": "Effectue tout les jets d'XP du personnage",
         "/takedamage ou /td": "``[joueur] {Roll expr.}`` Fait perdre le résultat de l'expression au joueur",
