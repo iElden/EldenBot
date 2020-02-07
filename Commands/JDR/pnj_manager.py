@@ -4,6 +4,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from typing import List, Dict
 from enum import IntEnum
+from util.decorator import refresh_google_token
 
 WEBHOOK_NAME = "Elden's Bot PNJ Manager"
 MAIN_GDOC_KEY = "1VwcqFHHsUohEp-jPNJ0pz7gS6s8u9ZPk1bsH6Eoqluo"
@@ -47,7 +48,7 @@ async def get_webhook(channel : discord.TextChannel) -> discord.Webhook:
 
 async def get_pnj(ll : [list], pnj_name : str) -> list:
     for line in ll:
-        if line[SHEET_COL.NAME].lower() == pnj_name.lower():
+        if line[SHEET_COL.NAME].lower().strip() == pnj_name.lower().strip():
             return line
     return None
 
