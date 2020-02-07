@@ -31,8 +31,12 @@ class RollResult:
         self.bonus = bonus
         self.is_bonus = bonus > 0 # type: bool
         self.bonus_value = abs(bonus)
+
+    @property
     def format_results(self):
         return ' ; '.join([', '.join([f"**{i}**" for i in result]) for result in self.results])
+
+    @property
     def intro_sentence(self):
         if not self.dices:
             dice_rolled = "Aucun dé"

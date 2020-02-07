@@ -20,6 +20,12 @@ from Config import GlobalConfig
 credentials = sac.from_json_keyfile_name("private/googlekey.json", ["https://spreadsheets.google.com/feeds"])
 gc = gspread.authorize(credentials)
 
+CMD_VERSUS_REGEX = re.compile(r"^\s*(?P<comp_atk>[\w ]*\w)\s*((?P<atk_bonus_sign>[+-])\s*(?P<atk_bonus>\d+))?\s*"
+                   r"(\|\s*(?P<comp_def>[\w ]*\w)\s*((?P<def_bonus_sign>[+-])\s*(?P<def_bonus>\d+))?)?\s*\s+(?P<def>[\w<>@]+)\s*(#\s*(?P<roller>\w+))?\s*$")
+VERSUS_DEFAULT_GROUPS = ["comp_atk", "atk_bonus_sign", "atk_bonus", "comp_def", "def_bonus_sign", "def_bonus", "def", "roller"]
+COMPROLL_DESC = ("{member.mention} fait un jet de {comp_name}.\nIl {result.intro_sentence}\n\n{result.format_results}\n\n" +
+                 "Dé final : {old_dice}**{final_dice}** / {comp_score}")
+
 # FILE CONST
 with open("private/mith_sheets.json") as fd:
     CHAR_SHEET = json.load(fd)
@@ -36,7 +42,6 @@ class COMP_LEVEL(enum.IntEnum):
     ADEPTE = 1
     MAITRE = 2
 STR_TO_COMP_LEVEL = {"Novice": COMP_LEVEL.NORMAL, "Adepte": COMP_LEVEL.ADEPTE, "Maître": COMP_LEVEL.MAITRE}
-
 
 # BORDER CONST
 SIZE = 128
@@ -140,7 +145,7 @@ def xp_roll(line : List[str]) -> dict:
     return {"success": success, "crits": crits, "old_xp": xp, "new_xp": xp + xp_won, "xp_won": xp_won,
             "old_total": total, "new_total": min(total + xp_won, 100), "comp_name": comp_name, "roll": dice}
 
-async def roll_by_comp(comp, name, bonus,  *, member, message, channel):
+async def roll_by_comp(comp, name, bonus):
     """
     Args:
         comp (List[Tuple[str, int, COMP_LEVEL]]): comp sheet Tuple[comp_name, score]
@@ -170,18 +175,8 @@ async def roll_by_comp(comp, name, bonus,  *, member, message, channel):
         old_dice = f"~~{final_dice}~~ "
         final_dice -= 10
     verdict = get_final_result(final_dice, comp_score)
-    em = discord.Embed(
-        title="Lancé de dés",
-        description=f"{member.mention} fait un jet de {comp_name}, Il {r.intro_sentence()}\n\n{r.format_results()}\n\n" +
-                    f"Dé final : {old_dice}**{final_dice}** / {comp_score}",
-        colour=member.colour
-    ).set_footer(text=message.content).set_author(name=member.name, icon_url=member.avatar_url)
-    em.add_field(name="Résultat", value=f"```diff\n{verdict}```")
-    if verdict == "- Echec Critique":
-        em.set_image(url=random_choice(FAIL_GIF))
-    elif verdict == "+ Réussite Critique":
-        em.set_image(url=random_choice(SUCCES_GIF))
-    await channel.send(embed=em)
+    return {"result": r, "old_dice": old_dice, "final_dice": final_dice, "comp_name": comp_name, "comp_level": comp_level,
+            "comp_score": comp_score, "verdict": verdict}
 
 def get_final_result(final_dice: int, score: int) -> str:
     if final_dice <= score // 5:
@@ -303,7 +298,56 @@ class CmdJdrMith:
             bonus = int(sign_char + re_result.group(2))
         else:
             name, bonus = content, 0
-        await roll_by_comp(comp, name.strip().lower(), bonus, message=message, channel=channel, member=target)
+
+        d = await roll_by_comp(comp, name.strip().lower(), bonus)
+        em = discord.Embed(
+            title="Lancé de dés",
+            description=COMPROLL_DESC.format(**d, member=member),
+            colour=target.colour
+        ).set_footer(text=message.content).set_author(name=target.name, icon_url=target.avatar_url)
+        em.add_field(name="Résultat", value=f"```diff\n{d['verdict']}```")
+        if d['verdict'] == "- Echec Critique":
+            em.set_image(url=random_choice(FAIL_GIF))
+        elif d['verdict'] == "+ Réussite Critique":
+            em.set_image(url=random_choice(SUCCES_GIF))
+        await channel.send(embed=em)
+
+    @user_can_use_command
+    @refresh_google_token(credentials, gc)
+    async def cmd_mithrollversus(self, *args, message, content, member, channel, guild, **_):
+        match = CMD_VERSUS_REGEX.match(content)
+        if not match:
+            raise InvalidArgs(f"The command content must match regular the regular expression\n``{CMD_VERSUS_REGEX.pattern}``")
+        d = {k:v for k, v in match.groupdict().items() if v is not None}
+        comp_atk = d['comp_atk']
+        atk_bonus = int(d.get('atk_bonus_sign', '+') + d.get('atk_bonus', '0'))
+        comp_def = d.get('comp_def', comp_atk)
+        def_bonus = int(d.get('def_bonus_sign', '+') + d.get('def_bonus', '0'))
+        defenser = get_member(guild, d['def'])
+        attacker = d.get('roller', None)
+        attacker = member if attacker is None else get_member(guild, attacker)
+        try:
+            wsh1 = gc.open_by_key(CHAR_SHEET[str(attacker.id)]).sheet1
+            wsh2 = gc.open_by_key(CHAR_SHEET[str(defenser.id)]).sheet1
+        except:
+            raise BotError("Impossible d'ouvrir la fiche de personnage du membre")
+        datk = await roll_by_comp(parse_competences(wsh1), comp_atk.strip().lower(), atk_bonus)
+        ddef = await roll_by_comp(parse_competences(wsh2), comp_def.strip().lower(), def_bonus)
+
+        em = discord.Embed(
+            title="Lancé de dés",
+            description=f"{attacker.mention} **vs** {defenser.mention}",
+            colour=attacker.colour
+        ).set_footer(text=message.content).set_author(name=attacker.name, icon_url=attacker.avatar_url)
+        em.add_field(name="Attaque", value=COMPROLL_DESC.format(**datk, member=attacker), inline=True)
+        em.add_field(name="Défense", value=COMPROLL_DESC.format(**ddef, member=defenser), inline=True)
+        em.add_field(name="Résultat", value=f"```diff\n{datk['verdict']}```**VS**```diff\n{ddef['verdict']}```", inline=False)
+        if datk['verdict'] == "- Echec Critique":
+            em.set_image(url=random_choice(FAIL_GIF))
+        elif datk['verdict'] == "+ Réussite Critique":
+            em.set_image(url=random_choice(SUCCES_GIF))
+        await channel.send(embed=em)
+
 
     @user_can_use_command
     @refresh_google_token(credentials, gc)
@@ -353,3 +397,4 @@ class CmdJdrMith:
     async def cmd_hd(self, *args, **kwargs): await self.cmd_takedamage(*args, **kwargs, heal=True)
     async def cmd_gr(self, *args, **kwargs): await self.cmd_gmroll(*args, **kwargs)
     async def cmd_mr(self, *args, **kwargs): await self.cmd_mithroll(*args, **kwargs)
+    async def cmd_mrv(self, *args, **kwargs):await self.cmd_mithrollversus(*args, **kwargs)
