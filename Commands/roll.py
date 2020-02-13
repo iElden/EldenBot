@@ -88,7 +88,7 @@ class CmdRoll:
         r = roll(expr)
         await message.channel.send(embed=discord.Embed(
             title="Lancé de dés",
-            description=f"{member.mention} {r.intro_sentence()}\n\n{r.format_results()}\n\nTotal : **{r.total}**",
+            description=f"{member.mention} {r.intro_sentence}\n\n{r.format_results}\n\nTotal : **{r.total}**",
             colour=member.colour
         ).set_footer(text=message.content).set_author(name=member.name, icon_url=member.avatar_url))
         try:
