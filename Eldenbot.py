@@ -68,9 +68,8 @@ async def on_message(m):
             logger.info(f"{member} used command {m.content}")
             await function(*args, message=m, member=member, force=force, cmd=cmd,
                            client=client, channel=m.channel, guild=m.guild, content=' '.join(args))
-        except BotError:
-            error = traceback.format_exc().split('\n')[-1] or traceback.format_exc().split('\n')[-2]
-            await m.channel.send(error[15:])
+        except BotError as e:
+            await m.channel.send(f"{type(e).__name__}: {e}")
         except Exception:
             em = discord.Embed(title="Oh no !  😱",
                                description="Une erreur s'est produite lors de l'éxécution de la commande\n" + msg("- [FATAL ERROR]\n" + traceback.format_exc()),
