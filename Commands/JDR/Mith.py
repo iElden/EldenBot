@@ -238,7 +238,7 @@ class CmdJdrMith:
 
         em = discord.Embed(colour=target.colour)
         if roll_result.dices:
-            em.add_field(name="Lancé de dé", value=f"{member.mention} {roll_result.intro_sentence()}\n{roll_result.format_results()}")
+            em.add_field(name="Lancé de dé", value=f"{member.mention} {roll_result.intro_sentence}\n{roll_result.format_results}")
         if damage > 0:
             em.add_field(name="Resultat", value=f"{target.mention} a pris **{damage}** point{'s' if damage > 1 else ''} de dégats.\n"
                          f"Il lui reste **{new_hp}** / {cell_list[1].value}", inline=False)
@@ -266,7 +266,7 @@ class CmdJdrMith:
         r = roll(expr)
         em = discord.Embed(
             title="Lancé de dés",
-            description=f"{member.mention} {r.intro_sentence()}\n\n{r.format_results()}\n\nTotal : **{r.total}**",
+            description=f"{member.mention} {r.intro_sentence}\n\n{r.format_results}\n\nTotal : **{r.total}**",
             colour=member.colour
         ).set_footer(text=message.content).set_author(name=member.name, icon_url=member.avatar_url)
         await message.channel.send(embed=em)
