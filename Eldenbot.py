@@ -24,6 +24,8 @@ if __name__ == '__main__':
 client = discord.Client(activity=discord.Game("type /help for commands"))
 logger = logging.getLogger("Main")
 
+NO_COMMANDS_SERVER = [197418659067592708]
+
 @client.event
 async def on_ready():
     logger.info("Connected")
@@ -50,8 +52,11 @@ async def on_raw_reaction_add(payload):
 
 @client.event
 async def on_message(m):
-    if m.content.startswith('/') :#and m.author == client.user:
-        if command.sleep and m.content != '/sleep':
+    if command.sleep and m.content != '/sleep':
+        return
+    if m.content.startswith('/') :
+        if m.guild and m.guild.id in NO_COMMANDS_SERVER:
+            logger.info(f"Cancel command on NO_COMMANDS_SERVER : <{m.author}> {m.content}")
             return
         member = m.author
         cmd = m.content.split(" ")[0][1:].lower()
