@@ -17,4 +17,7 @@ class NotFound(BotError):
     """NotFound"""
 
 class Forbidden(BotError):
-    """NotFound"""
+    """Forbidden"""
+
+class CommandCanceled(BotError):
+    """raised when bot cancel command"""

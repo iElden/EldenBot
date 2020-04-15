@@ -17,6 +17,7 @@ from .help import CmdHelp
 from .info import CmdInfos
 from .latex import CmdLatex
 from .link import CmdLink
+from .Linq import CmdLinq
 from .lol_score import CmdLolScore
 from .LoLQuizz import CmdLoLQuizz
 from .moderation_tools import CmdModeration
@@ -32,7 +33,7 @@ from LoupGarou.lg import CmdLg
 class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
               CmdVerif, CmdLolScore, CmdMusic, CmdModeration, CmdLg,
               CmdMoney, CmdInfos, CmdUseless, CmdHelp,
-              CmdJdr, CmdLoLQuizz, CmdTFT):
+              CmdJdr, CmdLoLQuizz, CmdTFT, CmdLinq):
     sleep = False
 
     @only_owner

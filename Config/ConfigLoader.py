@@ -27,6 +27,13 @@ class MithConfig(AbcConfig):
     def can_use_command(self, member_id):
         return self.non_player_can_use_commands or member_id == self.mj or member_id in self.players
 
+class LinqConfig(AbcConfig):
+    PATTERN = {
+        "mj": "DiscordUser",
+        "say_per_round": "Int",
+        "rounds": "Int"
+    }
+
 logger.info("Chargement des configs")
 
 class GlobalConfig:
