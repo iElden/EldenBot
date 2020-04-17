@@ -26,16 +26,19 @@ logger = logging.getLogger("Main")
 
 NO_COMMANDS_SERVER = [197418659067592708]
 
-@client.event
-async def on_ready():
-    logger.info("Connected")
+async def bot_routine():
+    await client.wait_until_ready()
     if len(argv) > 1 and argv[1] == '-d':
         await client.change_presence(status=discord.Status.dnd, activity=discord.Game("In debug mode..."))
-        logger.warning("Program has been lunched with -d argument, exiting on_ready ...")
+        logger.warning("Program has been lunched with -d argument, exiting bot_routine ...")
         return
     while True:
         await TFT_Functions.routine(client=client)
         await asyncio.sleep(300)
+
+@client.event
+async def on_ready():
+    logger.info("Connected")
 
 @client.event
 async def on_raw_reaction_add(payload):
@@ -91,6 +94,7 @@ async def on_message(m):
 
 
 if __name__ == '__main__':
+    asyncio.ensure_future(bot_routine())
     fd = open("private/token")
     client.run(json.load(fd))
     fd.close()
