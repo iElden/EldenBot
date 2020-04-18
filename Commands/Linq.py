@@ -30,8 +30,8 @@ class LinqGame:
         result = await linqround.run()
         await self.send_result(result)
 
-
     async def send_result(self, result):
+        await result.send_accusation_embed(self.channel)
         em = result.to_embed()
         txt = self.scoreboard.update_and_return_codeblock(result)
         em.add_field(name="Final Scoreboard", value=txt, inline=False)
@@ -73,7 +73,6 @@ class LinqRound:
         return RoundResult(self, self.game.players, accusation_result)
 
     async def ask_accusation(self, player):
-        print(f"started accusation for {player}")
         if player in self.spy:
             em = discord.Embed(
                 title="Trouvez votre allié",
@@ -88,7 +87,6 @@ class LinqRound:
                 if pl:
                     break
                 asyncio.ensure_future(player.send("Joueur non trouvé", delete_after=10))
-            print("OK S")
             return [pl]
 
         # if player is a counter-spy
@@ -172,23 +170,34 @@ class Scoreboard:
         max_player_name = max(len(i.name) for i in self._scoreboard.keys())
         txt = "```diff\n"
         for player, score in self:
-            txt += f"{'+' if score >= 0 else '-'} {player.name:>{max_player_name}}: {score:<3}({d[player]:+})\n"
+            txt += f"{self.diff_color(d[player])} {player.name:>{max_player_name}}: {score:<3}({d[player]:+})\n"
         return txt + "```"
+
+    @staticmethod
+    def diff_color(c: int):
+        if c == 0:
+            return '>'
+        if c < 0:
+            return '-'
+        return '+'
 
 
 class RoundResult:
     def __init__(self, linqround, players, acc_result):
         self.player_report = {} # type: Dict[discord.Member, Dict[str, int]]
+        self.accusations = {i:j for i,j in zip(players, acc_result)}
 
-        accusations = {i:j for i,j in zip(players, acc_result)}
-
-        for pl, acc in accusations.items():
+        for pl, acc in self.accusations.items():
             self.player_report[pl] = {}
+        for pl, acc in self.accusations.items():
             if len(acc) == 1:  # spy
                 if acc[0] in linqround.spy:
                     self.player_report[pl]["Allié trouvé"] = 1
-                    if accusations[acc[0]][0] == pl:
+                    if self.accusations[acc[0]][0] == pl:
                         self.player_report[pl]["Allié trouvé réciproquement"] = 2
+                else:
+                    self.player_report[pl]["Mauvais contact"] = -1
+                    self.player_report[acc[0]]["Contact volé"] = 1
             elif len(acc) == 2: #counter-spy
                 if acc[0] in linqround.spy and acc[1] in linqround.spy:
                     self.player_report[pl][f"{acc[0].name} démasqué"] = 1
@@ -200,8 +209,8 @@ class RoundResult:
 
     def to_embed(self):
         em = discord.Embed(title="Détail des scores")
-        for pl, dic in self.player_report.items():
-            em.add_field(name=pl.name, value=self.dic_to_codeblock(dic))
+        for pl_id, dic in self.player_report.items():
+            em.add_field(name=pl_id.name, value=self.dic_to_codeblock(dic))
         return em
 
     @staticmethod
@@ -210,6 +219,17 @@ class RoundResult:
         for reason, point in dic.items():
             txt += f"{'+' if point >= 0 else '-'} {reason} ({point:+})\n"
         return txt + '```'
+
+    async def send_accusation_embed(self, channel):
+        em = discord.Embed(title="Résultat de la manche")
+        spy = [(p, a) for p, a in self.accusations.items() if len(a) == 1]
+        counter = [(p, a) for p, a in self.accusations.items() if len(a) == 2]
+        em.add_field(name="Espion", value='\n'.join(f"{p.mention} => {a[0].mention}" for p, a in spy))
+        em.add_field(name="Contre-Espion",
+                     value='\n'.join(f"{p.mention} : {a[0].mention}, {a[1].mention}" for p, a in counter),
+                     inline=False)
+        await channel.send(embed=em)
+
 
 
 

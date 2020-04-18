@@ -10,6 +10,7 @@ from util.decorator import only_owner
 logger = logging.getLogger("CommandInitializer")
 logger.info("Loading commands")
 
+from .CivFR import CmdCivFR
 from .JDR import CmdJdr
 from .TFT.CmdTFT import CmdTFT
 from .deleteallmessage import CmdDeleteAllMessage
@@ -33,7 +34,7 @@ from LoupGarou.lg import CmdLg
 class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
               CmdVerif, CmdLolScore, CmdMusic, CmdModeration, CmdLg,
               CmdMoney, CmdInfos, CmdUseless, CmdHelp,
-              CmdJdr, CmdLoLQuizz, CmdTFT, CmdLinq):
+              CmdJdr, CmdLoLQuizz, CmdTFT, CmdLinq, CmdCivFR):
     sleep = False
 
     @only_owner
