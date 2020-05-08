@@ -16,12 +16,13 @@ from util.exception import BotError
 #Event listener
 from Commands.TFT.Functions import Functions as TFT_Functions
 from util.DynamicEmbed import on_reaction_change
+from Commands.DynamicVoice import DynamicVoices
 
 if __name__ == '__main__':
     from Commands import Command
     command = Command()
 
-client = discord.Client(activity=discord.Game("type /help for commands"))
+client = discord.Client(activity=discord.Game("type /help for commands"), allowed_mentions=discord.AllowedMentions(everyone=False))
 logger = logging.getLogger("Main")
 
 NO_COMMANDS_SERVER = [197418659067592708]
@@ -39,6 +40,14 @@ async def bot_routine():
 @client.event
 async def on_ready():
     logger.info("Connected")
+
+@client.event
+async def on_voice_state_update(member, before, after):
+    if before.channel != after.channel:
+        if after.channel is not None:
+            asyncio.ensure_future(DynamicVoices.on_voice_join(member, after.channel))
+        if before.channel is not None:
+            asyncio.ensure_future(DynamicVoices.on_voice_leave(member, before.channel))
 
 @client.event
 async def on_raw_reaction_add(payload):
