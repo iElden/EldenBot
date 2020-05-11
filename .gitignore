@@ -1,5 +1,5 @@
 .idea
-*~
+65;5405;1c*~
 *#
 *.pyc
 token
@@ -12,3 +12,4 @@ googlekey.json
 __pycache__
 formula.png
 _config
+tmp_wordlist_linq
