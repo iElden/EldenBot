@@ -25,7 +25,7 @@ if __name__ == '__main__':
 client = discord.Client(activity=discord.Game("type /help for commands"), allowed_mentions=discord.AllowedMentions(everyone=False))
 logger = logging.getLogger("Main")
 
-NO_COMMANDS_SERVER = [197418659067592708]
+NO_COMMANDS_SERVER = [] #[197418659067592708]
 
 async def bot_routine():
     await client.wait_until_ready()
