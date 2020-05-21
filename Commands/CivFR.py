@@ -54,16 +54,13 @@ class CmdCivFR:
         if not args[0].isdigit():
             raise InvalidArgs("1st Argument must be a integer (exemple: ``/draft 2``)")
         pool = leaders.leaders[:]
-        print("len", len(args))
         if len(args) >= 2:
             ban_query = args[1].split('.')
             for ban in ban_query:
                 lead = leaders.get_leader_named(ban)
                 if not lead:
-                    raise InvalidArgs(f"Leader \"{lead}\" non trouvé")
-                print(len(pool))
+                    raise InvalidArgs(f"Leader \"{ban}\" non trouvé")
                 pool.remove(lead)
-                print(len(pool))
         nb = int(args[0])
         random.shuffle(pool)
         leader_per_player = len(pool) // nb
