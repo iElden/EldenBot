@@ -15,6 +15,7 @@ from util.exception import BotError
 
 #Event listener
 from Commands.TFT.Functions import Functions as TFT_Functions
+from Commands.CivFR import FFATournament
 from util.DynamicEmbed import on_reaction_change
 from Commands.DynamicVoice import DynamicVoices
 
@@ -40,6 +41,7 @@ async def bot_routine():
 @client.event
 async def on_ready():
     logger.info("Connected")
+    await FFATournament.update_leaderboard(client)
 
 @client.event
 async def on_voice_state_update(member, before, after):
@@ -54,8 +56,9 @@ async def on_raw_reaction_add(payload):
     if payload.user_id == client.user.id:
         return
     try:
-        await TFT_Functions.on_champion_pick(payload, client=client)
-        await on_reaction_change(payload)
+        await (TFT_Functions.on_champion_pick(payload, client=client))
+        await (on_reaction_change(payload))
+        await (FFATournament.on_dindon(payload, client=client))
     except BotError:
         error = traceback.format_exc().split('\n')[-1] or traceback.format_exc().split('\n')[-2]
         await client.get_user(payload.user_id).send(error[15:])
@@ -98,8 +101,16 @@ async def on_message(m):
                                 client=client, channel=m.channel, guild=m.guild, content=m.content)
     elif client.user in m.mentions and m.author != client.user:
         await random_message(client, m)
-    await command.pnj_manager_on_message(m)
-    await send_to_linked(client, m)
+    try:
+        await FFATournament.on_report(m)
+    except BotError as e:
+        await m.channel.send(f"{type(e).__name__}: {e}")
+    except Exception:
+        em = discord.Embed(title="Oh no !  😱",
+                           description="Une erreur s'est produite lors de l'éxécution de la commande\n" + msg("- [FATAL ERROR]\n" + traceback.format_exc()),
+                           colour=0xFF0000).set_footer(text="command : " + m.content,icon_url=m.author.avatar_url)
+    await (command.pnj_manager_on_message(m))
+    await (send_to_linked(client, m))
 
 
 if __name__ == '__main__':
