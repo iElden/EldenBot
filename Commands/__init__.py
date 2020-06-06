@@ -24,6 +24,7 @@ from .LoLQuizz import CmdLoLQuizz
 from .moderation_tools import CmdModeration
 from .money import CmdMoney
 from .music import CmdMusic
+from .reactions import CmdReaction
 from .rgapi import CmdRgapi
 from .roll import CmdRoll
 from .uselesscmd import CmdUseless
@@ -34,7 +35,8 @@ from LoupGarou.lg import CmdLg
 class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
               CmdVerif, CmdLolScore, CmdMusic, CmdModeration, CmdLg,
               CmdMoney, CmdInfos, CmdUseless, CmdHelp,
-              CmdJdr, CmdLoLQuizz, CmdTFT, CmdLinq, CmdCivFR, CmdFFATournament):
+              CmdJdr, CmdLoLQuizz, CmdTFT, CmdLinq, CmdCivFR, CmdFFATournament,
+              CmdReaction):
     sleep = False
 
     @only_owner
