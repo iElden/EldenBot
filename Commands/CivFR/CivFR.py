@@ -15,6 +15,8 @@ class CmdCivFR:
         if len(args) >= 2:
             ban_query = args[1].split('.')
             for ban in ban_query:
+                if not ban:
+                    continue
                 lead = leaders.get_leader_named(ban)
                 if not lead:
                     raise InvalidArgs(f"Leader \"{ban}\" non trouvé")
