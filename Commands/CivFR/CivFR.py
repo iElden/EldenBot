@@ -2,37 +2,20 @@ import random
 
 from util.exception import InvalidArgs
 from .Leaders import leaders
+from .DynamicDraft import get_draft
 
-
-class CmdCivFR:
+class CmdCivGeneralFR:
     async def cmd_draft(self, *args : str, channel, client, **_):
         if not args:
             raise InvalidArgs("Command should take at least one parameter")
         if not args[0].isdigit():
             raise InvalidArgs("1st Argument must be a integer (exemple: ``/draft 2``)")
-        pool = leaders.leaders[:]
         nb = int(args[0])
-        if len(args) >= 2:
-            ban_query = args[1].split('.')
-            for ban in ban_query:
-                if not ban:
-                    continue
-                lead = leaders.get_leader_named(ban)
-                if not lead:
-                    raise InvalidArgs(f"Leader \"{ban}\" non trouvé")
-                pool.remove(lead)
-        if len(args) >= 3:
-            if not args[2].isdigit():
-                raise InvalidArgs("3rd Argument (max civ per draft) must be a integer (exemple: ``/draft 8 Maori.Colombie 4``)")
-            leader_per_player = int(args[2])
-        else:
-            leader_per_player = len(pool) // nb
-        random.shuffle(pool)
+        drafts = get_draft(nb, *args[1:], client=client)
 
         result = []
         for i in range(nb):
-            g = (f"{client.get_emoji(j.emoji_id)} {j.uuname.title()}" for j in pool[i*leader_per_player:i*leader_per_player+leader_per_player])
-            result.append(f"n°{i+1} | {', '.join(g)}")
+            result.append(f"n°{i+1} | {', '.join(drafts[i])}")
         txt = ""
         for r in result:
             if len(txt) + len(r) >= 2000:
@@ -41,3 +24,7 @@ class CmdCivFR:
             else:
                 txt += '\n' + r
         await channel.send(txt)
+
+    async def cmd_coinflip(self, channel):
+        await channel.send("Pile" if random.randint(0, 1) else "Face")
+

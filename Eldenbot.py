@@ -14,6 +14,7 @@ from util.function import msg
 from util.exception import BotError
 
 #Event listener
+from Commands.ChannelCleaner import routine as clear_routine
 from Commands.TFT.Functions import Functions as TFT_Functions
 from Commands.CivFR import FFATournament
 from util.DynamicEmbed import on_reaction_change
@@ -35,13 +36,17 @@ async def bot_routine():
         logger.warning("Program has been lunched with -d argument, exiting bot_routine ...")
         return
     while True:
-        await TFT_Functions.routine(client=client)
+        # await TFT_Functions.routine(client=client)
+        await clear_routine(client)
         await asyncio.sleep(300)
 
 @client.event
 async def on_ready():
     logger.info("Connected")
-    await FFATournament.update_leaderboard(client)
+    try:
+        await FFATournament.update_leaderboard(client)
+    except:
+        pass
 
 @client.event
 async def on_voice_state_update(member, before, after):
