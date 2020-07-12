@@ -171,7 +171,7 @@ class CmdCivFRDraft:
 
         while True:
             try:
-                reaction, _ = await client.wait_for('reaction_add', timeout=600, check=lambda reaction, user: user == draft.get_member_needed_for_action() and reaction.message == msg)
+                reaction, _ = await client.wait_for('reaction_add', timeout=600, check=lambda reaction, user: user == draft.get_member_needed_for_action() and reaction.message.id == msg.id)
             except asyncio.TimeoutError:
                 raise Timeout(f"{draft.get_member_needed_for_action()} didn't perform any action in 10 minutes, the task has been destroyed.")
             try:
