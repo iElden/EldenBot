@@ -21,10 +21,11 @@ def get_draft(nb : int, *args, client) -> List[str]:
                 raise InvalidArgs(f"Leader \"{ban}\" non trouvé")
             pool.remove(lead)
     if len(args) >= 2:
-        if not args[1].isdigit():
-            raise InvalidArgs(
-                "3rd Argument (max civ per draft) must be a integer (exemple: ``/draft 8 Maori.Colombie 4``)")
-        leader_per_player = int(args[1])
+        if args[1] != 'max':
+            if not args[1].isdigit():
+                raise InvalidArgs(
+                    "3rd Argument (max civ per draft) must be a integer or \"max\" (exemple: ``/draft 8 Maori.Colombie 4``)")
+            leader_per_player = int(args[1])
     else:
         leader_per_player = len(pool) // nb
     random.shuffle(pool)
