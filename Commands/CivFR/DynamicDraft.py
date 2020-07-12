@@ -77,11 +77,12 @@ class DynamicDraft:
             ban_per_team = int(args[5])
         pick_per_team = (draft_len - ban_per_team * 2) // 2
         if len(args) >= 5:
-            if not args[4].isdigit():
-                raise InvalidArgs(f"Number of pick per team must be a int, not \"{args[3]}\"")
-            pick_per_team = int(args[4])
-            if pick_per_team > (draft_len - ban_per_team * 2) // 2:
-                raise InvalidArgs(f"There is not enough draft for this number of ban/pick per team")
+            if args[4] != "max":
+                if not args[4].isdigit():
+                    raise InvalidArgs(f"Number of pick per team must be a int or \"max\", not \"{args[4]}\"")
+                pick_per_team = int(args[4])
+                if pick_per_team > (draft_len - ban_per_team * 2) // 2:
+                    raise InvalidArgs(f"There is not enough draft for this number of ban/pick per team")
         return ban_per_team, pick_per_team
 
     def to_embed(self):
@@ -170,7 +171,7 @@ class CmdCivFRDraft:
 
         while True:
             try:
-                reaction, _ = await client.wait_for('reaction_add', timeout=600, check=lambda reaction, user: user == draft.get_member_needed_for_action())
+                reaction, _ = await client.wait_for('reaction_add', timeout=600, check=lambda reaction, user: user == draft.get_member_needed_for_action() and reaction.message == msg)
             except asyncio.TimeoutError:
                 raise Timeout(f"{draft.get_member_needed_for_action()} didn't perform any action in 10 minutes, the task has been destroyed.")
             try:
