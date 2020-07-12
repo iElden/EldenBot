@@ -21,3 +21,6 @@ class Forbidden(BotError):
 
 class CommandCanceled(BotError):
     """raised when bot cancel command"""
+
+class Timeout(BotError):
+    """raised when bot cancel command"""

@@ -42,7 +42,7 @@ async def bot_routine():
 
 @client.event
 async def on_ready():
-    logger.info("Connected")
+    logger.info(f"Connected as {client.user}")
     try:
         await FFATournament.update_leaderboard(client)
     except:
@@ -120,6 +120,6 @@ async def on_message(m):
 
 if __name__ == '__main__':
     asyncio.ensure_future(bot_routine())
-    fd = open("private/token")
-    client.run(json.load(fd))
-    fd.close()
+    with open("private/debug_token" if len(argv) > 1 and argv[1] == '-d' else "private/token") as fd:
+        _token = fd.read()
+    client.run(_token)

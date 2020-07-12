@@ -14,6 +14,6 @@ async def clear_channels(channel : discord.TextChannel):
 
 
 async def routine(client : discord.Client):
-    logger.info("Runing clear routine ...")
+    logger.debug("Runing clear routine ...")
     for channel_id in CHANNELS:
         await clear_channels(client.get_channel(channel_id))

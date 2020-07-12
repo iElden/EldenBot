@@ -15,7 +15,7 @@ class CmdCivGeneralFR:
 
         result = []
         for i in range(nb):
-            result.append(f"n°{i+1} | {', '.join(drafts[i])}")
+            result.append(f"n°{i+1} | {drafts[i]}")
         txt = ""
         for r in result:
             if len(txt) + len(r) >= 2000:
@@ -25,6 +25,6 @@ class CmdCivGeneralFR:
                 txt += '\n' + r
         await channel.send(txt)
 
-    async def cmd_coinflip(self, channel):
+    async def cmd_coinflip(self, channel, *_, **__):
         await channel.send("Pile" if random.randint(0, 1) else "Face")
 
