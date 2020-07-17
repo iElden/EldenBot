@@ -37,8 +37,11 @@ async def bot_routine():
         return
     while True:
         # await TFT_Functions.routine(client=client)
-        await clear_routine(client)
-        await asyncio.sleep(300)
+        try:
+            await clear_routine(client)
+        except:
+            pass
+        await asyncio.sleep(3600)
 
 @client.event
 async def on_ready():
