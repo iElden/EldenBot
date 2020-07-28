@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 logger = logging.getLogger("ChannelCleaner")
 
-CHANNELS = [516418255834054671, 571736666868285455]
+CHANNELS = [516418255834054671]
 
 def message_is_not_pinned(message: discord.Message):
     return not message.pinned
