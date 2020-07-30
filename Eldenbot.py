@@ -94,7 +94,7 @@ async def on_message(m):
             return
         try:
             logger.info(f"{member} used command {m.content}")
-            await function(*args, message=m, member=member, force=force, cmd=cmd,
+            await function(*(i for i in args if i), message=m, member=member, force=force, cmd=cmd,
                            client=client, channel=m.channel, guild=m.guild, content=' '.join(args))
         except BotError as e:
             await m.channel.send(f"{type(e).__name__}: {e}")

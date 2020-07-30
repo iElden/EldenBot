@@ -107,7 +107,9 @@ class DynamicDraft:
     def to_embed(self):
         em = discord.Embed(title="Dynamic Draft", description='\n'.join(self._get_draft()))
         if self.is_ended:
-            em.add_field(name="Progression", value=f"Draft terminé", inline=False)
+            em.add_field(name="Progression",
+                         value=f"Draft terminé\n{ICONS[2]} Équipe de {self.caps[0].mention}\n{ICONS[3]} Équipe de {self.caps[1].mention}",
+                         inline=False)
         else:
             em.add_field(name="Progression",
                          value=f"```ml\n{self._get_phase()}``````md\n{self._get_phase_tl()}```\n{self._get_action_needed()}",
@@ -136,7 +138,7 @@ class DynamicDraft:
             + '>' + ' '.join(str(i) for i in phase[self.phase_nb+1:]))
 
     def _get_action_needed(self):
-        return f"{self.get_member_needed_for_action().mention} doit choisir une draft à {'ban' if self.phase == self.ActionType.BAN else 'pick'}"
+        return f"{ICONS[self.get_team_needed_for_action() + 1]} {self.get_member_needed_for_action().mention} doit choisir une draft à {'ban' if self.phase == self.ActionType.BAN else 'pick'}"
 
     def get_team_needed_for_action(self) -> int:
         return self.get_current_phase()[self.phase_nb]
