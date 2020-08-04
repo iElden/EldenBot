@@ -1,9 +1,10 @@
 import discord
-from typing import List
+import asyncio
+from typing import List, Iterable, Dict, Optional
 import random
 
 from util.exception import InvalidArgs, NotFound
-from .Leaders import leaders
+from .Leaders import leaders, Leader
 
 PERSONA_BANS = ["franceeleonore", "teddyroughrider", "catherinemagnifique"]
 RF_BANS = ["cris", "paysbas", "georgie", "chandragupta", "coree", "mapuches", "mongolie", "ecosse", "zoulous"]
@@ -19,7 +20,7 @@ SPECIAL_BANS = {
     "vanillaonly": RF_BANS + GS_BANS + DLC_BANS + NFP_BANS
 }
 
-def get_draft(nb : int, *args, client) -> List[str]:
+def get_raw_draft(nb : int, *args) -> Iterable[List[Leader]]:
     pool = leaders.leaders[:]
     if len(args) >= 1:
         ban_query = args[0].split('.')
@@ -43,13 +44,86 @@ def get_draft(nb : int, *args, client) -> List[str]:
                     "3rd Argument (max civ per draft) must be a integer or \"max\" (exemple: ``/draft 8 Maori.Colombie 4``)")
             leader_per_player = int(args[1])
     random.shuffle(pool)
-    return [','.join(f"{client.get_emoji(j.emoji_id)} {j.civ}" for j in
-               pool[i * leader_per_player:i * leader_per_player + leader_per_player]) for i in range(nb)]
+    return (pool[i * leader_per_player:i * leader_per_player + leader_per_player] for i in range(nb))
+
+def get_draft(nb : int, *args, client) -> List[str]:
+    pools = get_raw_draft(nb, *args)
+    return [','.join(f"{client.get_emoji(j.emoji_id)} {j.civ}" for j in pool) for pool in pools]
 
 async def get_member_in_channel(voice : discord.VoiceState):
     if not voice or not voice.channel:
         raise NotFound("Impossible de récupérer les joueurs : Vous n'êtes pas connecté à un channel vocal")
     return voice.channel.members
+
+class BlindDraft:
+    def __init__(self, members, *args):
+        self.members = members
+        self.pools = [*get_raw_draft(len(members), *args)]
+        self.pool_per_member = {k.id: v for k, v in zip(self.members, self.pools)}  # type: Dict[int, List[Leader]]
+        self.picks = {k.id: None for k in self.members}  # type: Dict[int, Optional[Leader]]
+
+    async def run(self, channel : discord.TextChannel, member, client):
+        msg = await channel.send(embed=discord.Embed(title="Blind draft", description="Envoie des drafts en cours !"))
+        print(self.members)
+        print(self.pools)
+        tasks = (self.send_bdrafts(member, pool, client=client) for member, pool in zip(self.members, self.pools))
+        tasks = [*tasks]
+        print(f"send task {tasks}")
+        mps = await asyncio.gather(*tasks)
+        print("task done")
+        mp_per_member = {k: v for k, v in zip(self.members, mps)}
+
+        def check(reac_ : discord.Reaction, user_ : discord.User):
+            return (user_.id in mp_per_member.keys() and
+                    reac_.message in mp_per_member.values())
+        while True:
+            print("waiting for reaction")
+            reaction, user = await client.wait_for('reaction', check=check)
+            print(f"got {reaction} from {user}")
+            leader = leaders.get_leader_by_emoji_id(reaction.emoji.id)
+            if leaders.get_leader_by_emoji_id(reaction.emoji.id) not in self.pool_per_member[user.id]:
+                continue
+            self.picks[user.id] = leader
+            await msg.edit(embed=self.get_embed(client=client))
+            if self.is_finished:
+                return
+
+    @staticmethod
+    async def send_bdrafts(member, pool, *, client):
+        print(f"sening draft to {member}")
+        em = discord.Embed(title="Blind Draft",
+                           description='\n'.join(f"{client.get_emoji(i.emoji_id)} {i.civ}" for i in pool))
+        em.add_field(name="Status", value="Cliquez sur une réaction pour choisir votre leader")
+        print("sending ...")
+        msg = await member.send(embed=em)
+        print(f"done")
+        tasks = (msg.add_reaction(client.get_emoji(i.emoji_id)) for i in pool)
+        await asyncio.gather(*tasks)
+        print(f"Reaction added")
+
+    @staticmethod
+    async def edit_bdrafts(message, pool, *, client):
+        em = discord.Embed(title="Blind Draft",
+                           description='\n'.join(f"{client.get_emoji(i.emoji_id)} {i.civ}" for i in pool))
+        em.add_field(name="Status", value="Vous avez choisis votre Leader !")
+        await message.edit(embed=em)
+
+    def get_embed(self, *, client):
+        em = discord.Embed(title="Blind Draft")
+        em.add_field(name="Joueurs", value='\n'.join(f"<@{i}>" for i in self.picks.keys()))
+        if self.is_finished:
+            em.add_field(name="Picks",
+                         value='\n'.join(f"{client.get_emoji(i.emoji_id)} {i.civ}" for i in self.picks.values()))
+        else:
+            em.add_field(name="Picks",
+                         value='\n'.join(("En attente ..." if i is None else "Sélectionné") for i in self.picks.values()))
+
+    @property
+    def is_finished(self):
+        return None in self.picks.values()
+
+
+# COMMAND
 
 class CmdCivDraft:
     async def cmd_draft(self, *args : str, channel, client, member, **_):
@@ -77,3 +151,12 @@ class CmdCivDraft:
             else:
                 txt += '\n' + r
         await channel.send(txt)
+
+    async def cmd_blinddraft(self, *args : str, channel, client, member, **_):
+        bd = BlindDraft(await get_member_in_channel(member.voice), *args)
+        await bd.run(channel, member, client=client)
+
+    async def cmd_dbgblinddraft(self, *args : str, channel, client, member, **_):
+        bd = BlindDraft([member, member, member, member, member, member], *args)
+        await bd.run(channel, member, client=client)
+

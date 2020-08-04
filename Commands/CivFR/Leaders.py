@@ -18,6 +18,12 @@ class Leaders:
                 return leader
         return None
 
+    def get_leader_by_emoji_id(self, emoji_id):
+        for leader in self:
+            if leader.emoji_id == emoji_id:
+                return leader
+        return None
+
 class Leader:
     def __init__(self, emoji_id, uuname, name, civ, *alias):
         self.emoji_id = int(emoji_id)
