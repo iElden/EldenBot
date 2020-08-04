@@ -47,7 +47,7 @@ def get_draft(nb : int, *args, client) -> List[str]:
                pool[i * leader_per_player:i * leader_per_player + leader_per_player]) for i in range(nb)]
 
 async def get_member_in_channel(voice : discord.VoiceState):
-    if not voice or voice.channel:
+    if not voice or not voice.channel:
         raise NotFound("Impossible de récupérer les joueurs : Vous n'êtes pas connecté à un channel vocal")
     return voice.channel.members
 
