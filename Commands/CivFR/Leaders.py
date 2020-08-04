@@ -37,6 +37,8 @@ class Leader:
         return f"<Leader: {self.uuname}>"
 
     def __eq__(self, other):
+        if other is None:
+            return False
         if isinstance(other, str):
             return other.lower() in self.all_name
         return self.uuname == other.uuname

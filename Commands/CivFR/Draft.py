@@ -58,28 +58,23 @@ async def get_member_in_channel(voice : discord.VoiceState):
 class BlindDraft:
     def __init__(self, members, *args):
         self.members = members
-        self.pools = [*get_raw_draft(len(members), *args)]
+        self.pools = [i[:20] for i in get_raw_draft(len(members), *args)]
         self.pool_per_member = {k.id: v for k, v in zip(self.members, self.pools)}  # type: Dict[int, List[Leader]]
         self.picks = {k.id: None for k in self.members}  # type: Dict[int, Optional[Leader]]
 
     async def run(self, channel : discord.TextChannel, member, client):
         msg = await channel.send(embed=discord.Embed(title="Blind draft", description="Envoie des drafts en cours !"))
-        print(self.members)
-        print(self.pools)
         tasks = (self.send_bdrafts(member, pool, client=client) for member, pool in zip(self.members, self.pools))
-        tasks = [*tasks]
-        print(f"send task {tasks}")
         mps = await asyncio.gather(*tasks)
-        print("task done")
-        mp_per_member = {k: v for k, v in zip(self.members, mps)}
+        mp_per_member = {k.id: v for k, v in zip(self.members, mps)}
 
         def check(reac_ : discord.Reaction, user_ : discord.User):
             return (user_.id in mp_per_member.keys() and
-                    reac_.message in mp_per_member.values())
+                    reac_.message.id in (i.id for i in mp_per_member.values()))
+
+        await msg.edit(embed=self.get_embed(client=client))
         while True:
-            print("waiting for reaction")
-            reaction, user = await client.wait_for('reaction', check=check)
-            print(f"got {reaction} from {user}")
+            reaction, user = await client.wait_for('reaction_add', check=check)
             leader = leaders.get_leader_by_emoji_id(reaction.emoji.id)
             if leaders.get_leader_by_emoji_id(reaction.emoji.id) not in self.pool_per_member[user.id]:
                 continue
@@ -90,16 +85,13 @@ class BlindDraft:
 
     @staticmethod
     async def send_bdrafts(member, pool, *, client):
-        print(f"sening draft to {member}")
         em = discord.Embed(title="Blind Draft",
                            description='\n'.join(f"{client.get_emoji(i.emoji_id)} {i.civ}" for i in pool))
         em.add_field(name="Status", value="Cliquez sur une réaction pour choisir votre leader")
-        print("sending ...")
         msg = await member.send(embed=em)
-        print(f"done")
         tasks = (msg.add_reaction(client.get_emoji(i.emoji_id)) for i in pool)
         await asyncio.gather(*tasks)
-        print(f"Reaction added")
+        return msg
 
     @staticmethod
     async def edit_bdrafts(message, pool, *, client):
@@ -117,10 +109,11 @@ class BlindDraft:
         else:
             em.add_field(name="Picks",
                          value='\n'.join(("En attente ..." if i is None else "Sélectionné") for i in self.picks.values()))
+        return em
 
     @property
     def is_finished(self):
-        return None in self.picks.values()
+        return None not in self.picks.values()
 
 
 # COMMAND
@@ -157,6 +150,6 @@ class CmdCivDraft:
         await bd.run(channel, member, client=client)
 
     async def cmd_dbgblinddraft(self, *args : str, channel, client, member, **_):
-        bd = BlindDraft([member, member, member, member, member, member], *args)
+        bd = BlindDraft([member, client.get_user(267018917589942273)], *args)
         await bd.run(channel, member, client=client)
 
