@@ -1,55 +1,12 @@
-import random
 import discord
 import asyncio
 from enum import IntEnum
-from typing import List, Tuple, Generator
+from typing import List, Tuple
 
 from constant import emoji
 from util.exception import InvalidArgs, Timeout, ALEDException
 from util.function import get_member
-from .Leaders import leaders
-
-PERSONA_BANS = ["franceeleonore", "teddyroughrider", "catherinemagnifique"]
-RF_BANS = ["cris", "paysbas", "georgie", "chandragupta", "coree", "mapuches", "mongolie", "ecosse", "zoulous"]
-GS_BANS = ["hongrie", "maoris", "canada", "incas", "mali", "suede", "ottomans", "phenicie", "angleterreeleonore", "franceeleonore"]
-DLC_BANS = ["azteques", "pologne", "australie", "perse", "macedoine", "nubie", "khmer", "indonesie"]
-NFP_BANS = ["mayas", "ethiopie", "catherinemagnifique", "teddyroughrider"]
-SPECIAL_BANS = {
-    "persona": PERSONA_BANS,
-    "r&f": RF_BANS,
-    "gs": GS_BANS,
-    "dlc": DLC_BANS,
-    "nfp": NFP_BANS,
-    "vanillaonly": RF_BANS + GS_BANS + DLC_BANS + NFP_BANS
-}
-
-def get_draft(nb : int, *args, client) -> List[str]:
-    pool = leaders.leaders[:]
-    if len(args) >= 1:
-        ban_query = args[0].split('.')
-        for ban in ban_query:
-            if not ban:
-                continue
-            sp = SPECIAL_BANS.get(ban.lower())
-            if sp:
-                for i in sp:
-                    pool.remove(leaders.get_leader_named(i))
-            else:
-                lead = leaders.get_leader_named(ban)
-                if not lead:
-                    raise InvalidArgs(f"Leader \"{ban}\" non trouvé")
-                pool.remove(lead)
-    leader_per_player = len(pool) // nb
-    if len(args) >= 2:
-        if args[1] != 'max':
-            if not args[1].isdigit():
-                raise InvalidArgs(
-                    "3rd Argument (max civ per draft) must be a integer or \"max\" (exemple: ``/draft 8 Maori.Colombie 4``)")
-            leader_per_player = int(args[1])
-    random.shuffle(pool)
-    return [','.join(f"{client.get_emoji(j.emoji_id)} {j.civ}" for j in
-               pool[i * leader_per_player:i * leader_per_player + leader_per_player]) for i in range(nb)]
-
+from .Draft import get_draft
 
 ICONS = ['?', '🚫', chr(0x1f7eb), chr(0x1f7e6)]
 class DraftLineState(IntEnum):
@@ -174,7 +131,7 @@ class DynamicDraft:
         return False
 
 
-class CmdCivFRDraft:
+class CmdCivFRDDraft:
 
     async def cmd_ddraft(self, *args : str, channel, client, member, guild, **_):
         """/ddraft {nb} {bans} {leader_per_draft} {pick_per_team} {ban_per_team}"""
