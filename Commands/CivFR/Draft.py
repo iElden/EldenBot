@@ -1,3 +1,4 @@
+import discord
 from typing import List
 import random
 
@@ -45,17 +46,17 @@ def get_draft(nb : int, *args, client) -> List[str]:
     return [','.join(f"{client.get_emoji(j.emoji_id)} {j.civ}" for j in
                pool[i * leader_per_player:i * leader_per_player + leader_per_player]) for i in range(nb)]
 
-async def get_member_in_channel(channel):
-    if not channel:
+async def get_member_in_channel(voice : discord.VoiceState):
+    if not voice or voice.channel:
         raise NotFound("Impossible de récupérer les joueurs : Vous n'êtes pas connecté à un channel vocal")
-    return channel.members
+    return voice.channel.members
 
 class CmdCivDraft:
     async def cmd_draft(self, *args : str, channel, client, member, **_):
         if not args:
             raise InvalidArgs("Command should take at least one parameter")
         if args[0].lower() == 'ffa':
-            members = await get_member_in_channel(member.voice.channel)
+            members = await get_member_in_channel(member.voice)
             nb = len(members)
             generator = (m.mention for m in members)
         else:
