@@ -12,7 +12,7 @@ def msg(message, error=False):
 def get_channel_named(server, name):
     return(discord.utils.get(server.channels, name=name))
 
-async def get_member_in_channel(voice : discord.VoiceState):
+def get_member_in_channel(voice : discord.VoiceState):
     if not voice or not voice.channel:
         raise NotFound("Impossible de récupérer les joueurs : Vous n'êtes pas connecté à un channel vocal")
     return voice.channel.members

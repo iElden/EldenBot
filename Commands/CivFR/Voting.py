@@ -29,7 +29,7 @@ VOTED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
     "Stratégiques": [(LETTER.C, "Classique"), (LETTER.A, "Abondante"), (LETTER.E, "Epique"), (LETTER.G, "Garentie")],
     "Ridges definition": [(LETTER.S, "Standard"), (LETTER.V, "Vanilla"), (LETTER.L, "Large opening"), (LETTER.I, "Impénétrable")],
     "Catastrophe": [(NB[0], "0"), (NB[1], "1"), (NB[2], "2"), (NB[3], "3"), (NB[4], "4")],
-    DRAFT_MODE_TITLE: [("✅", DraftMode.WithTrade.value), ("🚫", DraftMode.NoTrade.value), ("🙈", "Aveugle"), ("❓", "All Random")]
+    DRAFT_MODE_TITLE: [("✅", DraftMode.WITH_TRADE.value), ("🚫", DraftMode.NO_TRADE.value), ("🙈", DraftMode.BLIND.value), ("❓", DraftMode.RANDOM.value)]
 }
 
 class Voting:
@@ -48,35 +48,37 @@ class Voting:
         ban_msg = await self.send_ban_msg(channel)
         confirm_msg = await self.send_confirm_msg(channel)
         votes_msg_ids = [i.id for i in sended]
-        msg_ids = votes_msg_ids
-        msg_to_vote : Dict[int, Tuple[str, List[Tuple[EMOJI, str]]]] = {sended[i].id: (name, v) for i, (name, (k, v)) in enumerate(VOTED_SETTINGS.items())}
-        await asyncio.gather(*[self.add_reactions(msg, (i[0] for i in v)) for msg, v in zip(sended, VOTED_SETTINGS.values())])
+        msg_ids = [*votes_msg_ids, ban_msg.id, confirm_msg.id]
+        msg_to_vote : Dict[int, Tuple[str, List[Tuple[EMOJI, str]]]] = {sended[i].id: (name, v) for i, (name, (v)) in enumerate(VOTED_SETTINGS.items())}
 
         def check(reac_ : discord.Reaction, user_ : discord.User):
             return reac_.message.id in msg_ids
 
         while True:
             reaction, user = await client.wait_for('reaction_add', check=check, timeout=600)  # type: (discord.Reaction, discord.User)
-            if user.id not in self.members_id:
+            if user.id not in self.members_id and user.id != client.user.id:
                 try:
                     await reaction.remove(user)
                 except discord.HTTPException:
                     pass
                 continue
+
             if reaction.message.id == confirm_msg.id and user.id in self.waiting_members:
                 self.waiting_members.remove(user.id)
+                await self.edit_confirm_msg(confirm_msg)
                 if not self.waiting_members:
                     break
-            elif reaction.message.id == ban_msg.id:
+            if reaction.message.id == ban_msg.id:
                 emoji : discord.Emoji = reaction.emoji
                 if not isinstance(emoji, discord.Emoji):
                     continue
                 leader = leaders.get_leader_by_emoji_id(reaction.emoji.id)
                 if not leader:
                     continue
-                if self.is_vote_winner(reaction) and leader not in self.banned_leaders:
+                if (await self.is_vote_winner(reaction)) and leader not in self.banned_leaders:
                     self.banned_leaders.append(leader)
-            elif reaction.message.id in votes_msg_ids and self.is_vote_winner(reaction):
+                    await self.edit_ban_msg(ban_msg, client)
+            elif reaction.message.id in votes_msg_ids and (await self.is_vote_winner(reaction)):
                 winner = self.get_winner_by_emoji_str(str(reaction.emoji), msg_to_vote[reaction.message.id])
                 if not winner:
                     continue
@@ -110,28 +112,31 @@ class Voting:
         await msg.add_reaction("🚫")
         return msg
 
+    async def edit_ban_msg(self, msg, client):
+        await msg.edit(content="__**Bans**__: Sélectionnez les civs à bannir depuis la liste des emojis.\n" +
+                       '\n'.join(f"{client.get_emoji(i.emoji_id)} {i.civ}" for i in self.banned_leaders))
+
     async def send_confirm_msg(self, channel) -> discord.Message:
         msg = await channel.send("En attente de : " + ', '.join(f"<@{i}>" for i in self.waiting_members))
         await msg.add_reaction(TURKEY)
         return msg
 
     async def edit_confirm_msg(self, msg):
-        await msg.edit("En attente de : " + ', '.join(f"<@{i}>" for i in self.waiting_members))
+        await msg.edit(content="En attente de : " + ', '.join(f"<@{i}>" for i in self.waiting_members))
 
     async def is_vote_winner(self, reaction : discord.Reaction) -> bool:
-        ls = list(filter(lambda user: user.id in self.members_id, await reaction.users().flatten))
+        users = await reaction.users().flatten()
+        ls = list(filter(lambda user: user.id in self.members_id, users))
         if len(ls) >= self.majority:
             return True
         return False
 
     @staticmethod
     async def send_line(name, line, channel):
-        return await channel.send(f"__**{name}**__:" + ', '.join(f"{i}={j}" for i, j in line))
-
-    @staticmethod
-    async def add_reactions(msg : discord.Message, reactions : Iterable[str]):
-        for reaction in reactions:
+        msg = await channel.send(f"__**{name}**__:  " + '  |  '.join(f"{i} {j}" for i, j in line))
+        for reaction, _ in line:
             await msg.add_reaction(reaction)
+        return msg
 
     def get_winner_by_emoji_str(self, reaction_str : EMOJI, vote : Tuple[str, Iterable[Tuple[EMOJI, str]]]) -> Optional[Tuple[str, EMOJI, str]]:
         for line in vote[1]:

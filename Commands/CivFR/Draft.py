@@ -131,7 +131,7 @@ class CmdCivDraft:
         if not args:
             raise InvalidArgs("Command should take at least one parameter")
         if args[0].lower() == 'ffa':
-            members = await get_member_in_channel(member.voice)
+            members = get_member_in_channel(member.voice)
             nb = len(members)
             generator = (m.mention for m in members)
         else:
@@ -144,7 +144,7 @@ class CmdCivDraft:
 
 
     async def cmd_blinddraft(self, *args : str, channel, client, member, **_):
-        bd = BlindDraft(await get_member_in_channel(member.voice), *args)
+        bd = BlindDraft(get_member_in_channel(member.voice), *args)
         await bd.run(channel, client=client)
 
     async def cmd_dbgblinddraft(self, *args : str, channel, client, member, **_):
