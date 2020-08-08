@@ -18,7 +18,7 @@ class Leaders:
                 return leader
         return None
 
-    def get_leader_by_emoji_id(self, emoji_id):
+    def get_leader_by_emoji_id(self, emoji_id : int):
         for leader in self:
             if leader.emoji_id == emoji_id:
                 return leader
@@ -42,6 +42,9 @@ class Leader:
         if isinstance(other, str):
             return other.lower() in self.all_name
         return self.uuname == other.uuname
+
+    def __str__(self):
+        return self.civ
 
 def load_leaders():
     with open("data/leaders.csv", "r") as fd:

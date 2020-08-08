@@ -8,7 +8,7 @@ import json
 from util.exception import InvalidArgs, Forbidden
 from .utils import is_arbitre
 from .exc import ParsingError
-from .constant import DIDON, ARBITRE_ID, CIVFR_GUILD_ID
+from .constant import TURKEY, ARBITRE_ID, CIVFR_GUILD_ID
 
 MENTION = re.compile(".*<@!?(\d+)>.*")
 POINTS = [18, 15, 12, 9, 6, 5, 4, 2] + [0] * 5
@@ -152,10 +152,10 @@ async def on_report(message):
     em.set_footer(text=f"Report by: {message.author}")
     msg = await message.channel.send(embed=em)  # type: discord.Message
     db.add_match(Match(result, message.id, msg.id, False, date))
-    await msg.add_reaction(DIDON)
+    await msg.add_reaction(TURKEY)
 
 async def on_dindon(payload : discord.RawReactionActionEvent, *, client : discord.Client):
-    if payload.channel_id != REPORT_CHANNEL and payload.emoji != DIDON:
+    if payload.channel_id != REPORT_CHANNEL and payload.emoji != TURKEY:
         return
     channel = client.get_channel(payload.channel_id)
     civ_fr = client.get_guild(CIVFR_GUILD_ID)  # type: discord.Guild

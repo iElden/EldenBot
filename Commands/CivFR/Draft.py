@@ -3,7 +3,8 @@ import asyncio
 from typing import List, Iterable, Dict, Optional
 import random
 
-from util.exception import InvalidArgs, NotFound
+from util.exception import InvalidArgs
+from util.function import get_member_in_channel
 from .Leaders import leaders, Leader
 
 PERSONA_BANS = ["franceeleonore", "teddyroughrider", "catherinemagnifique"]
@@ -50,11 +51,6 @@ def get_draft(nb : int, *args, client) -> List[str]:
     pools = get_raw_draft(nb, *args)
     return [','.join(f"{client.get_emoji(j.emoji_id)} {j.civ}" for j in pool) for pool in pools]
 
-async def get_member_in_channel(voice : discord.VoiceState):
-    if not voice or not voice.channel:
-        raise NotFound("Impossible de récupérer les joueurs : Vous n'êtes pas connecté à un channel vocal")
-    return voice.channel.members
-
 class BlindDraft:
     def __init__(self, members, *args):
         self.members = members
@@ -62,7 +58,7 @@ class BlindDraft:
         self.pool_per_member = {k.id: v for k, v in zip(self.members, self.pools)}  # type: Dict[int, List[Leader]]
         self.picks = {k.id: None for k in self.members}  # type: Dict[int, Optional[Leader]]
 
-    async def run(self, channel : discord.TextChannel, member, client):
+    async def run(self, channel : discord.TextChannel, client):
         msg = await channel.send(embed=discord.Embed(title="Blind draft", description="Envoie des drafts en cours !"))
         tasks = (self.send_bdrafts(member, pool, client=client) for member, pool in zip(self.members, self.pools))
         mps = await asyncio.gather(*tasks)
@@ -116,8 +112,20 @@ class BlindDraft:
         return None not in self.picks.values()
 
 
-# COMMAND
+async def draw_draft(drafts, generator, channel):
+    result = []
+    for i, g in enumerate(generator):
+        result.append(f"{g} | {drafts[i]}")
+    txt = ""
+    for r in result:
+        if len(txt) + len(r) >= 2000:
+            await channel.send(txt)
+            txt = r
+        else:
+            txt += '\n' + r
+    await channel.send(txt)
 
+# COMMAND
 class CmdCivDraft:
     async def cmd_draft(self, *args : str, channel, client, member, **_):
         if not args:
@@ -132,24 +140,14 @@ class CmdCivDraft:
             nb = int(args[0])
             generator = (f"n°{i+1}" for i in range(nb))
         drafts = get_draft(nb, *args[1:], client=client)
+        await draw_draft(drafts, generator, channel)
 
-        result = []
-        for i, g in enumerate(generator):
-            result.append(f"{g} | {drafts[i]}")
-        txt = ""
-        for r in result:
-            if len(txt) + len(r) >= 2000:
-                await channel.send(txt)
-                txt = r
-            else:
-                txt += '\n' + r
-        await channel.send(txt)
 
     async def cmd_blinddraft(self, *args : str, channel, client, member, **_):
         bd = BlindDraft(await get_member_in_channel(member.voice), *args)
-        await bd.run(channel, member, client=client)
+        await bd.run(channel, client=client)
 
     async def cmd_dbgblinddraft(self, *args : str, channel, client, member, **_):
         bd = BlindDraft([member, client.get_user(267018917589942273)], *args)
-        await bd.run(channel, member, client=client)
+        await bd.run(channel, client=client)
 
