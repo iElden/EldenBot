@@ -5,7 +5,7 @@ from enum import Enum
 
 from constant.emoji import NB, LETTER
 from util.function import get_member_in_channel
-from util.exception import InvalidArgs
+from util.exception import InvalidArgs, Timeout
 from .Leaders import leaders
 from .Draft import BlindDraft, get_draft, draw_draft
 from .constant import TURKEY
@@ -55,7 +55,10 @@ class Voting:
             return reac_.message.id in msg_ids
 
         while True:
-            reaction, user = await client.wait_for('reaction_add', check=check, timeout=600)  # type: (discord.Reaction, discord.User)
+            try:
+                reaction, user = await client.wait_for('reaction_add', check=check, timeout=600)  # type: (discord.Reaction, discord.User)
+            except asyncio.TimeoutError:
+                raise Timeout(f"Vote id {confirm_msg.id} timed out, task killed")
             if user.id not in self.members_id and user.id != client.user.id:
                 try:
                     await reaction.remove(user)
