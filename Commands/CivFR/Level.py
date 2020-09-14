@@ -62,25 +62,25 @@ class Requirement:
             rt = rt.union(cls._recursive_get_obsolete_roles(OBSOLETE_ROLES[role]))
         return rt
 
-        @classmethod
-        def level_10(cls, player_stat : PlayerStat) -> bool:
-            return player_stat.begin_ffa_play >= 10
+    @classmethod
+    def level_10(cls, player_stat : PlayerStat) -> bool:
+        return player_stat.begin_ffa_play >= 10
 
-        @classmethod
-        def level_20_ffa(cls, player_stat : PlayerStat) -> bool:
-            return player_stat.begin_ffa_win >= 10
+    @classmethod
+    def level_20_ffa(cls, player_stat : PlayerStat) -> bool:
+        return player_stat.begin_ffa_win >= 10
 
-        @classmethod
-        def level_20_teamer(cls, player_stat : PlayerStat) -> bool:
-            return player_stat.begin_teamer_win >= 10
+    @classmethod
+    def level_20_teamer(cls, player_stat : PlayerStat) -> bool:
+        return player_stat.begin_teamer_win >= 10
 
-        @classmethod
-        def level_25(cls, player_stat : PlayerStat) -> bool:
-            return player_stat.teamer_win >= 20 or player_stat.ffa_win >= 5 or player_stat.great_player
+    @classmethod
+    def level_25(cls, player_stat : PlayerStat) -> bool:
+        return player_stat.teamer_win >= 20 or player_stat.ffa_win >= 5 or player_stat.great_player
 
-        @classmethod
-        def level_30(cls, player_stat : PlayerStat) -> bool:
-            return cls.level_25(player_stat) and not player_stat.is_bad_coatch
+    @classmethod
+    def level_30(cls, player_stat : PlayerStat) -> bool:
+        return cls.level_25(player_stat) and not player_stat.is_bad_coatch
 
     ROLE_REQUIREMENT = {
         "10": level_10.__func__,
