@@ -1,9 +1,14 @@
 import discord
 import re
 import json
+from typing import List
+
 from util.exception import ALEDException, NotFound
 
 WEBHOOK_NAME = "EldenBotWook"
+
+def list_to_block(ls : List[str]):
+    return "```diff\n{}```".format('\n'.join(ls))
 
 def msg(message, error=False):
     if error : return("```diff\n- [ERREUR]\n{}```".format(message))
