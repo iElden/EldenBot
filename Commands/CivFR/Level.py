@@ -1,9 +1,14 @@
-import sqlite3 as sq3
 from typing import List, Set
+import discord
+import asyncio
 
 from util.function import get_member, list_to_block
-from util.exception import Forbidden, InvalidArgs, NotFound
+from util.exception import Forbidden, InvalidArgs, NotFound, ALEDException
 from .utils import is_arbitre
+from .ReportParser import Report, GameType
+from .constant import CIVFR_GUILD_ID, TURKEY
+
+from .Database import db, PlayerStat, Match
 
 ROLE = {
     "10": 754681667037429840,
@@ -13,6 +18,7 @@ ROLE = {
     "30": 754681648917774458
 }
 
+REPORT_CHANNEL = 754874164447412305
 OBSOLETE_ROLES = {
     "10": [],
     "20FFA": [],
@@ -21,29 +27,12 @@ OBSOLETE_ROLES = {
     "30": ["25"]
 }
 
-
-class PlayerStat:
-    def __init__(self, discord_id, level, ffa_play, ffa_win, teamer_play, teamer_win,
-                 begin_ffa_play, begin_ffa_win, begin_teamer_play, begin_teamer_win, great_player, is_bad_coatch):
-        self.discord_id : int = discord_id
-        self.level : int = level
-        self.ffa_play : int = ffa_play
-        self.ffa_win : int = ffa_win
-        self.teamer_play : int = teamer_play
-        self.teamer_win : int = teamer_win
-        self.begin_ffa_play : int = begin_ffa_play
-        self.begin_ffa_win : int = begin_ffa_win
-        self.begin_teamer_play : int = begin_teamer_play
-        self.begin_teamer_win : int = begin_teamer_win
-        self.great_player : bool = great_player
-        self.is_bad_coatch : bool = is_bad_coatch
-
-    def __str__(self):
-        return (f"FFA win: {self.ffa_win}\nFFA play: {self.ffa_play}\n"
-                f"Teamer win: {self.teamer_win}\nTeamer play: {self.teamer_play}\n\n"
-                f"Begin FFA win: {self.begin_ffa_win}\nBegin FFA play: {self.begin_ffa_play}\n"
-                f"Begin Teamer win: {self.begin_teamer_win}\nBegin Teamer play: {self.begin_teamer_play}\n\n"
-                f"Great Player: {self.great_player}\nIs bad coatch: {self.is_bad_coatch}")
+POSITION_REQUIRE_FOR_WIN = {
+    GameType.BEGIN_FFA : 2,
+    GameType.BEGIN_TEAMER : 1,
+    GameType.FFA : 1,
+    GameType.TEAMER : 1
+}
 
 class Requirement:
     @classmethod
@@ -90,64 +79,74 @@ class Requirement:
         "30": level_30.__func__
     }
 
-class Database:
-    def __init__(self):
-        self.conn = sq3.connect("data/civfr.db")
-        self.create_tables()
+async def on_message(message):
+    if message.channel.id != REPORT_CHANNEL:
+        return
+    if not message.content.lower().startswith("game"):
+        return
+    report = Report.from_str(message.content)
+    match = Match(message.id, False, report)
+    validation_msg = await message.channel.send(embed=match.to_embed())
+    match.check_msg_id = validation_msg.id
+    db.add_match(match)
+    await validation_msg.add_reaction(TURKEY)
 
-    def create_tables(self):
-        self.conn.execute("""
-        CREATE TABLE IF NOT EXISTS Players
-        (discord_id INT PRIMARY KEY,
-        level INT NOT NULL DEFAULT 0,
-        ffa_play INT NOT NULL DEFAULT 0,
-        ffa_win INT NOT NULL DEFAULT 0,
-        teamer_play INT NOT NULL DEFAULT 0,
-        teamer_win INT NOT NULL DEFAULT 0,
-        begin_ffa_play INT NOT NULL DEFAULT 0,
-        begin_ffa_win INT NOT NULL DEFAULT 0,
-        begin_teamer_play INT NOT NULL DEFAULT 0,
-        begin_teamer_win INT NOT NULL DEFAULT 0,
-        great_player BOOLEAN NOT NULL DEFAULT 0,
-        is_bad_coatch BOOLEAN NOT NULL DEFAULT 0)
-        """)
-        self.conn.commit()
+async def on_reaction(payload : discord.RawReactionActionEvent, *, client : discord.Client):
+    if payload.channel_id != REPORT_CHANNEL or str(payload.emoji) != TURKEY :
+        return
+    civfr : discord.Guild = client.get_guild(CIVFR_GUILD_ID)
+    member : discord.Member = civfr.get_member(payload.user_id)
+    if not member:
+        raise ALEDException("Member not found on CivFR")
+    #if not is_arbitre(member):
+    #    return
+    match = db.get_match(payload.message_id)
+    if not match or match.validated:
+        return
+    db.valid_match(match)
+    # update Players Stats database
+    for i in match.report.players:
+        db.register_plstats(i.id,
+                            match.report.gametype,
+                            i.position <= POSITION_REQUIRE_FOR_WIN[match.report.gametype])
+    # Verif if players are eligible to new roles
+    tasks = [recalc_role_for(civfr.get_member(i.id)) for i in match.report.players]
+    rt = await asyncio.gather(*tasks)
+    tasks = [client.get_channel(REPORT_CHANNEL).send(list_to_block(i)) for i in rt if i]
+    if tasks:
+        await asyncio.gather(*tasks)
+    # Change embed
+    validation_msg = await client.get_channel(payload.channel_id).fetch_message(match.check_msg_id)
+    await validation_msg.edit(embed=match.to_embed())
+    await validation_msg.clear_reactions()
 
-    def get_stat_for(self, discord_id) -> PlayerStat:
-        data = self.conn.execute("""
-            SELECT level, ffa_play, ffa_win, teamer_play, teamer_win, begin_ffa_play, begin_ffa_win, begin_teamer_play, begin_teamer_win, great_player, is_bad_coatch
-            FROM Players WHERE discord_id = ?""", (discord_id,))
-        rt = data.fetchone()
-        if not rt:
-            return PlayerStat(discord_id, *[0]*11)
-        return PlayerStat(discord_id, *rt)
+async def on_edit(payload : discord.RawMessageUpdateEvent, client):
+    if payload.channel_id != REPORT_CHANNEL:
+        return
+    match = db.get_match(payload.message_id)
+    if not match or match.validated or match.id != payload.message_id:
+        return
+    message = await client.get_channel(payload.channel_id).fetch_message(payload.message_id)
+    report = Report.from_str(message.content)
+    new_match = Match(message.id, False, report, match.check_msg_id)
+    validation_msg = await client.get_channel(payload.channel_id).fetch_message(match.check_msg_id)
+    await validation_msg.edit(embed=new_match.to_embed())
+    db.add_match(new_match) # add_match use "INSERT OR UPDATE" SQL
 
-    def manual_query_set(self, *args):
-        if len(args) != 3:
-            raise InvalidArgs("Args must be the discord_id, key and the value")
-        self.set(args[0], args[1], args[2])
+async def on_delete(payload : discord.RawMessageDeleteEvent, client):
+    if payload.channel_id != REPORT_CHANNEL:
+        return
+    match = db.get_match(payload.message_id)
+    if not match or match.validated:
+        return
+    validation_msg = await client.get_channel(payload.channel_id).fetch_message(match.check_msg_id)
+    await validation_msg.delete()
+    db.remove_match(match)
 
-    def set(self, discord_id, key, value, create=True):
-        if create:
-            self.conn.execute("INSERT OR IGNORE INTO Players(discord_id) VALUES (?)", (discord_id,))
-        self.conn.execute('UPDATE Players SET "{}" = ? WHERE discord_id = ?'.format(key.replace('"', '""')), (value, discord_id))
-        self.conn.commit()
-
-    def register_ffa(self, discord_id, win=False):
-        pl = self.get_stat_for(discord_id)
-        self.set(discord_id, f"ffa_play", pl.ffa_play + 1)
-        if win:
-            self.set(discord_id, f"ffa_win", pl.ffa_win + 1, create=False)
-
-    def register_teamer(self, discord_id, win=False):
-        pl = self.get_stat_for(discord_id)
-        self.set(discord_id, f"teamer_play", pl.teamer_play + 1)
-        if win:
-            self.set(discord_id, f"teamer_win", pl.teamer_win + 1, create=False)
-
-db = Database()
 
 async def recalc_role_for(member):
+    if not member:
+        return
     debug_msg = ["+ [DEBUG]"]
     player_stat = db.get_stat_for(member.id)
     new_lvl_roles = Requirement.get_role_for(player_stat)
@@ -161,7 +160,6 @@ async def recalc_role_for(member):
             debug_msg.append(f"+ removing all lvl roles")
             await member.remove_roles(*(member.guild.get_role(i) for i in old_lvl_roles_id))
         debug_msg.append(f"+ giving new lvl roles")
-        print(new_lvl_roles)
         await member.add_roles(*(member.guild.get_role(ROLE[i]) for i in new_lvl_roles))
     return debug_msg
 

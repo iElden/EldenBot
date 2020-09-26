@@ -17,8 +17,12 @@ from util.exception import BotError
 from Commands.ChannelCleaner import routine as clear_routine
 from Commands.TFT.Functions import Functions as TFT_Functions
 from Commands.CivFR import FFATournament
-from util.DynamicEmbed import on_reaction_change
+from util.DynamicEmbed import on_reaction_change as dynamicembed_reaciton_change
 from Commands.DynamicVoice import DynamicVoices
+from Commands.CivFR.Level import on_message as civfrlevel_on_message
+from Commands.CivFR.Level import on_reaction as civfrlevel_on_reaction
+from Commands.CivFR.Level import on_edit as civfrlevel_on_edit
+from Commands.CivFR.Level import on_delete as civfrlevel_on_delete
 
 if __name__ == '__main__':
     from Commands import Command
@@ -64,14 +68,21 @@ async def on_raw_reaction_add(payload):
     if payload.user_id == client.user.id:
         return
     try:
+        await civfrlevel_on_reaction(payload, client=client)
         await (TFT_Functions.on_champion_pick(payload, client=client))
-        await (on_reaction_change(payload))
+        await (dynamicembed_reaciton_change(payload))
         await (FFATournament.on_dindon(payload, client=client))
     except BotError:
         error = traceback.format_exc().split('\n')[-1] or traceback.format_exc().split('\n')[-2]
         await client.get_user(payload.user_id).send(error[15:])
 
+@client.event
+async def on_raw_message_edit(payload : discord.RawMessageUpdateEvent):
+    await civfrlevel_on_edit(payload, client=client)
 
+@client.event
+async def on_raw_message_delete(payload : discord.RawMessageDeleteEvent):
+    await civfrlevel_on_delete(payload, client=client)
 
 @client.event
 async def on_message(m):
@@ -110,6 +121,7 @@ async def on_message(m):
     elif client.user in m.mentions and m.author != client.user:
         await random_message(client, m)
     try:
+        await civfrlevel_on_message(m)
         await FFATournament.on_report(m)
     except BotError as e:
         await m.channel.send(f"{type(e).__name__}: {e}")
@@ -117,6 +129,7 @@ async def on_message(m):
         em = discord.Embed(title="Oh no !  😱",
                            description="Une erreur s'est produite lors de l'éxécution de la commande\n" + msg("- [FATAL ERROR]\n" + traceback.format_exc()),
                            colour=0xFF0000).set_footer(text="command : " + m.content,icon_url=m.author.avatar_url)
+        await m.channel.send(embed=em)
     await (command.pnj_manager_on_message(m))
     await (send_to_linked(client, m))
 

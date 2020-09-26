@@ -122,9 +122,7 @@ class List(AbcConfigurerType):
         return [i.to_json() for i in self.value]
 
     def set_from_json(self, value):
-        print(self.subtype)
         self.value = [self.subtype() for _ in range(len(value))]
-        print(self.value)
         for i, v in enumerate(self.value):
             v.set_from_json(value[i])
 
