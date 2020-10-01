@@ -46,7 +46,7 @@ class Match:
     def to_embed(self) -> discord.Embed:
         colour, txt = self.get_warning()
         em = discord.Embed(title="ReportParser",
-                           description=f"Gametype : {self.report.gametype or self.report.gametype.value}\n\n{self.report.players_to_strings()}",
+                           description=f"Gametype : {self.report.gametype and self.report.gametype.value}\n\n{self.report.players_to_strings()}",
                            color=colour)
         if txt:
             em.add_field(name="Status", value=txt)
