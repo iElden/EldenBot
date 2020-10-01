@@ -87,7 +87,8 @@ class Report:
         elif gametype in [GameType.BEGIN_TEAMER, GameType.TEAMER]:
             players = cls.parse_teamer(corps)
         else:
-            raise NotFound(f"GameType don't match, please use one of the Following : {', '.join(i.value for i in GameType)}")
-        if not players:
-            raise InvalidArgs("No player was mentionned in report")
+            players = []
+            # raise NotFound(f"GameType don't match, please use one of the Following : {', '.join(i.value for i in GameType)}")
+        # if not players:
+        #     raise InvalidArgs("No player was mentionned in report")
         return cls(gametype, players)

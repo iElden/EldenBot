@@ -59,6 +59,8 @@ class Match:
             return 0xE74C3C, "Le report ne contient aucun joueur"
         if not self.report.gametype:
             return 0xE74C3C, "Le report ne contient pas le type de partie ou ce dernier n'est pas reconnu"
+        if not self.report.players:
+            return 0xE74C3C, "Aucun joueur n'est présent dans le report"
         if not all(i.is_valid() for i in self.report.players):
             return 0xF1C40F, "Certain joueur possède des données invalides"
         if len(self.report.players) < 4:
