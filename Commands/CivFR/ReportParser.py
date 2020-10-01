@@ -82,7 +82,6 @@ class Report:
             gametype_query = txt
             corps = ""
         gametype_query = gametype_query.lower()
-        gametype = None
         for i in GameType:
             if i.value.lower() in gametype_query:
                 gametype = i
