@@ -174,5 +174,4 @@ class CmdCivFRLevel:
             raise NotFound(f"Member {args[0]} not found")
         db.manual_query_set(*args)
         await channel.send("Stats changed")
-        dbg = await recalc_role_for(member)
-        await channel.send(list_to_block(dbg))
+        await recalc_role_for(member)
