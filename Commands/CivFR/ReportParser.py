@@ -44,13 +44,13 @@ class Report:
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            "gametype": self.gametype.value,
+            "gametype": self.gametype and self.gametype.value,
             "players": [i.to_json() for i in self.players]
         }
 
     @classmethod
     def from_json(cls, js):
-        return cls(GameType(js['gametype']) if js['gametype'] else None,
+        return cls((js['gametype'] and GameType(js['gametype'])) if js['gametype'] else None,
                    [GPlayer(i['id'], leaders.get_leader_named(i['leader']), i['position']) for i in js['players']])
 
     @staticmethod
