@@ -112,9 +112,6 @@ async def on_reaction(payload : discord.RawReactionActionEvent, *, client : disc
     # Verif if players are eligible to new roles
     tasks = [recalc_role_for(civfr.get_member(i.id)) for i in match.report.players]
     rt = await asyncio.gather(*tasks)
-    tasks = [client.get_channel(REPORT_CHANNEL).send(list_to_block(i)) for i in rt if i]
-    if tasks:
-        await asyncio.gather(*tasks)
     # Change embed
     validation_msg = await client.get_channel(payload.channel_id).fetch_message(match.check_msg_id)
     await validation_msg.edit(embed=match.to_embed())
@@ -147,21 +144,14 @@ async def on_delete(payload : discord.RawMessageDeleteEvent, client):
 async def recalc_role_for(member):
     if not member:
         return
-    debug_msg = ["+ [DEBUG]"]
     player_stat = db.get_stat_for(member.id)
     new_lvl_roles = Requirement.get_role_for(player_stat)
     new_lvl_roles_id = set(ROLE[i] for i in new_lvl_roles)
-    debug_msg.append(f"= {member} is eligible for roles : {new_lvl_roles} ({new_lvl_roles_id})")
     old_lvl_roles_id = set(i.id for i in member.roles if i.id in ROLE.values())
-    debug_msg.append(f"= {member} curently have lvl roles ID: {old_lvl_roles_id}")
     if old_lvl_roles_id != new_lvl_roles_id:
-        debug_msg.append(f"- {member} Roles are different, updating ...")
         if old_lvl_roles_id:
-            debug_msg.append(f"+ removing all lvl roles")
             await member.remove_roles(*(member.guild.get_role(i) for i in old_lvl_roles_id))
-        debug_msg.append(f"+ giving new lvl roles")
         await member.add_roles(*(member.guild.get_role(ROLE[i]) for i in new_lvl_roles))
-    return debug_msg
 
 
 class CmdCivFRLevel:
