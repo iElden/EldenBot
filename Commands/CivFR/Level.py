@@ -4,6 +4,7 @@ import asyncio
 
 from util.function import get_member, list_to_block
 from util.exception import Forbidden, InvalidArgs, NotFound, ALEDException
+from util.decorator import only_owner
 from .utils import is_arbitre
 from .ReportParser import Report, GameType
 from .constant import CIVFR_GUILD_ID, TURKEY
@@ -175,3 +176,14 @@ class CmdCivFRLevel:
         db.manual_query_set(*args)
         await channel.send("Stats changed")
         await recalc_role_for(member)
+
+    @only_owner
+    async def cmd_civfrgivelvl20(self, *args, guild : discord.Guild, **_):
+        R = [652143977260122125, 682919453788471306, 682245125656805459, 708475004744106024, 708475862860824598, 751869750660956220,
+             708475012624941107, 708475021621723137, 708475860348567612, 708475861606596612, 708475862693052438, 708475864110596107
+             ]
+        members = [member for member in guild.members if any([role.id in R for role in member.roles])]
+        for member in members:
+            db.set(member.id, "great_player", 1)
+            await recalc_role_for(member)
+
