@@ -76,8 +76,12 @@ class Report:
 
     @classmethod
     def from_str(cls, txt):
-        gametype_query, corps = txt.split('\n', 1)
-        gametype_query.lower()
+        if '\n' in txt:
+            gametype_query, corps = txt.split('\n', 1)
+        else:
+            gametype_query = txt
+            corps = ""
+        gametype_query = gametype_query.lower()
         gametype = None
         for i in GameType:
             if i.value.lower() in gametype_query:
