@@ -57,15 +57,15 @@ class Requirement:
 
     @classmethod
     def level_20_ffa(cls, player_stat : PlayerStat) -> bool:
-        return player_stat.begin_ffa_win >= 10
+        return player_stat.begin_ffa_win >= 10 or player_stat.great_player
 
     @classmethod
     def level_20_teamer(cls, player_stat : PlayerStat) -> bool:
-        return player_stat.begin_teamer_win >= 10
+        return player_stat.begin_teamer_win >= 10 or player_stat.great_player
 
     @classmethod
     def level_25(cls, player_stat : PlayerStat) -> bool:
-        return player_stat.teamer_win >= 20 or player_stat.ffa_win >= 5 or player_stat.great_player
+        return player_stat.teamer_win >= 20 or player_stat.ffa_win >= 5
 
     @classmethod
     def level_30(cls, player_stat : PlayerStat) -> bool:
