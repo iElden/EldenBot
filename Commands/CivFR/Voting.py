@@ -19,8 +19,8 @@ class DraftMode(Enum):
 
 EMOJI = str
 VOTED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
-    "Map": [(LETTER.P, "Pangée"), (LETTER.C, "Contient & Iles"), (NB[7], "7 mers"), (LETTER.L, "Lacs"), (LETTER.A, "Archipelle"), (LETTER.F, "Fractale"),
-            ("🏝️", "Plateau d'ile"), ("🌋", "Primordial"), (LETTER.T, "Tilted Axis"), (LETTER.M, "Mer Intérieure"), ("🌍", "Terre"), ("❓", "Aléatoire")],
+    "Map": [(LETTER.P, "Pangée"), (LETTER.C, "Contient & Iles"), (NB[7], "7 mers"), (LETTER.H, "Highland"), (LETTER.L, "Lacs"), (LETTER.A, "Archipelle"),
+            (LETTER.F, "Fractale"), ("🏝️", "Plateau d'ile"), ("🌋", "Primordial"), (LETTER.T, "Tilted Axis"), (LETTER.M, "Mer Intérieure"), ("🌍", "Terre"), ("❓", "Aléatoire")],
     "Diplo": [("🦄", "Normal Diplo"), ("➕", "Diplo +"), ("🦅", "Always War"), ("🐨", "Always Peace")],
     "Timer": [("🕑", "Dynamique"), ("⏩", "Compétitif"), ("🔥", "90s"), ("🦘", "Sephi n+30"), ("🇿", "ZLAN")],
     "Age du monde": [("🗻", "Normal"), ("🌋", "Nouveau")],

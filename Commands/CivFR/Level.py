@@ -98,8 +98,8 @@ async def on_reaction(payload : discord.RawReactionActionEvent, *, client : disc
     member : discord.Member = civfr.get_member(payload.user_id)
     if not member:
         raise ALEDException("Member not found on CivFR")
-    #if not is_arbitre(member):
-    #    return
+    if not is_arbitre(member):
+        return
     match = db.get_match(payload.message_id)
     if not match or match.validated:
         return

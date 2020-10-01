@@ -77,9 +77,10 @@ class Report:
     @classmethod
     def from_str(cls, txt):
         gametype_query, corps = txt.split('\n', 1)
+        gametype_query.lower()
         gametype = None
         for i in GameType:
-            if i.value in gametype_query:
+            if i.value.lower() in gametype_query:
                 gametype = i
         if gametype in [GameType.BEGIN_FFA, GameType.FFA]:
             players = cls.parse_ffa(corps)
