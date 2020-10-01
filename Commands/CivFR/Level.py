@@ -182,7 +182,7 @@ class CmdCivFRLevel:
         R = [652143977260122125, 682919453788471306, 682245125656805459, 708475004744106024, 708475862860824598, 751869750660956220,
              708475012624941107, 708475021621723137, 708475860348567612, 708475861606596612, 708475862693052438, 708475864110596107
              ]
-        members = list(set(sum([role.members for role in R])))
+        members = list(set(sum([guild.get_role(role).members for role in R])))
         for member in members:
             db.set(member.id, "great_player", 1)
             await recalc_role_for(member)
