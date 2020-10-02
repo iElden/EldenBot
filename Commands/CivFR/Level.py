@@ -183,9 +183,8 @@ class CmdCivFRLevel:
              708475012624941107, 708475021621723137, 708475860348567612, 708475861606596612, 708475862693052438, 708475864110596107
              ]
 
-        members = await guild.fetch_members(limit=None).flatten()
         i = 0
-        for member in members:
+        async for member in guild.fetch_members(limit=None).flatten():
             for role in member.roles:
                 if role.id in R:
                     db.set(member.id, "great_player", 1)
