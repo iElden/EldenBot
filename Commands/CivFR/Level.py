@@ -182,9 +182,18 @@ class CmdCivFRLevel:
         R = [652143977260122125, 682919453788471306, 682245125656805459, 708475004744106024, 708475862860824598, 751869750660956220,
              708475012624941107, 708475021621723137, 708475860348567612, 708475861606596612, 708475862693052438, 708475864110596107
              ]
-        members = sum([guild.get_role(role).members for role in R], [])
+
+        members = await guild.fetch_members(limit=None)
+        i = 0
         for member in members:
-            db.set(member.id, "great_player", 1)
-            await recalc_role_for(member)
+            for role in member.roles:
+                if role.id in R:
+                    db.set(member.id, "great_player", 1)
+                    await recalc_role_for(member)
+                    await channel.send(f"Le lvl 20 a été donnée à {member.mention} car il fait partie de l'équipe {role.mention}", allowed_mentions=discord.AllowedMentions(users=False, roles=False))
+                    break
+            i += 1
+            if i % 500 == 0:
+                await channel.send(f"Progression: {i}/{len(members)}")
         await channel.send("DONE")
 
