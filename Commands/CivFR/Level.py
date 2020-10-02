@@ -193,6 +193,6 @@ class CmdCivFRLevel:
                     break
             i += 1
             if i % 500 == 0:
-                await channel.send(f"Progression: {i}/{len(members)}")
+                await channel.send(f"Progression: {i}/???")
         await channel.send("DONE")
 
