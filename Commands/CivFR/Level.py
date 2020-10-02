@@ -184,7 +184,8 @@ class CmdCivFRLevel:
              ]
 
         i = 0
-        async for member in guild.fetch_members(limit=None).flatten():
+        members = guild.members
+        for member in members:
             for role in member.roles:
                 if role.id in R:
                     db.set(member.id, "great_player", 1)
@@ -193,6 +194,6 @@ class CmdCivFRLevel:
                     break
             i += 1
             if i % 500 == 0:
-                await channel.send(f"Progression: {i}/???")
+                await channel.send(f"Progression: {i}/{len(members)}")
         await channel.send("DONE")
 
