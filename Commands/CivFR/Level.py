@@ -3,7 +3,7 @@ import discord
 import asyncio
 
 from util.function import get_member, list_to_block
-from util.exception import Forbidden, InvalidArgs, NotFound, ALEDException
+from util.exception import Forbidden, InvalidArgs, NotFound, ALEDException, BotError
 from util.decorator import only_owner
 from .utils import is_arbitre
 from .ReportParser import Report, GameType
@@ -54,7 +54,7 @@ class Requirement:
 
     @classmethod
     def level_10(cls, player_stat : PlayerStat) -> bool:
-        return player_stat.begin_ffa_play >= 10
+        return player_stat.begin_ffa_play >= 10 or player_stat.longdate_member
 
     @classmethod
     def level_20_ffa(cls, player_stat : PlayerStat) -> bool:
@@ -112,7 +112,7 @@ async def on_reaction(payload : discord.RawReactionActionEvent, *, client : disc
                             i.position <= POSITION_REQUIRE_FOR_WIN[match.report.gametype])
     # Verif if players are eligible to new roles
     tasks = [recalc_role_for(civfr.get_member(i.id)) for i in match.report.players]
-    rt = await asyncio.gather(*tasks)
+    await asyncio.gather(*tasks)
     # Change embed
     validation_msg = await client.get_channel(payload.channel_id).fetch_message(match.check_msg_id)
     await validation_msg.edit(embed=match.to_embed())
@@ -177,6 +177,34 @@ class CmdCivFRLevel:
         await channel.send("Stats changed")
         await recalc_role_for(member)
 
+    async def cmd_unvalidreport(self, *args, member, force, client, **_):
+        if not is_arbitre(member) and not force:
+            raise Forbidden("You must be Arbitre for use this command")
+        if not args:
+            raise InvalidArgs("Command must take one argument")
+        if args[0].isdigit():
+            raise InvalidArgs("Argument must be a number")
+        match = db.get_match(args[0])
+        if not match:
+            raise NotFound("Match not found")
+        if not match.validated:
+            raise BotError("Match is already unvalided")
+        db.unvalid_match(match)
+        # update Players Stats database
+        for i in match.report.players:
+            db.unregister_plstats(i.id,
+                                match.report.gametype,
+                                i.position <= POSITION_REQUIRE_FOR_WIN[match.report.gametype])
+        # Verif if players are eligible to new roles
+        civfr: discord.Guild = client.get_guild(CIVFR_GUILD_ID)
+        tasks = [recalc_role_for(civfr.get_member(i.id)) for i in match.report.players]
+        await asyncio.gather(*tasks)
+        # Change embed
+        validation_msg = await client.get_channel(REPORT_CHANNEL).fetch_message(match.check_msg_id)
+        await validation_msg.edit(embed=match.to_embed())
+        await validation_msg.clear_reactions()
+
+
     @only_owner
     async def cmd_civfrgivelvl20(self, *args, channel, guild : discord.Guild, **_):
         R = [652143977260122125, 682919453788471306, 682245125656805459, 708475004744106024, 708475862860824598, 751869750660956220,
@@ -192,6 +220,23 @@ class CmdCivFRLevel:
                     await recalc_role_for(member)
                     await channel.send(f"Le lvl 20 a été donnée à {member.mention} car il fait partie de l'équipe {role.mention}", allowed_mentions=discord.AllowedMentions(users=False, roles=False))
                     break
+            i += 1
+            if i % 500 == 0:
+                await channel.send(f"Progression: {i}/{len(members)}")
+        await channel.send("DONE")
+
+    @only_owner
+    async def cmd_civfrgivelvl10(self, *args, channel, guild : discord.Guild, **_):
+        from datetime import datetime, timedelta
+        lvl10cap = datetime.now() - timedelta(days=365//2)
+        i = 0
+        members = guild.members
+        for member in members:
+            if member.joined_at < lvl10cap:
+                db.set(member.id, "great_player", 1)
+                await recalc_role_for(member)
+                await channel.send(f"Le lvl 20 a été donnée à {member.mention} car il fait partie de l'équipe {role.mention}", allowed_mentions=discord.AllowedMentions(users=False, roles=False))
+                break
             i += 1
             if i % 500 == 0:
                 await channel.send(f"Progression: {i}/{len(members)}")

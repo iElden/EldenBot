@@ -14,8 +14,8 @@ GAMETYPE_TO_LOWERCASE = {
 }
 
 class PlayerStat:
-    def __init__(self, discord_id, level, ffa_play, ffa_win, teamer_play, teamer_win,
-                 begin_ffa_play, begin_ffa_win, begin_teamer_play, begin_teamer_win, great_player, is_bad_coatch):
+    def __init__(self, discord_id, level, ffa_play, ffa_win, teamer_play, teamer_win, begin_ffa_play, begin_ffa_win,
+                 begin_teamer_play, begin_teamer_win, great_player, is_bad_coatch, longdate_member):
         self.discord_id : int = discord_id
         self.level : int = level
         self.ffa_play : int = ffa_play
@@ -28,13 +28,14 @@ class PlayerStat:
         self.begin_teamer_win : int = begin_teamer_win
         self.great_player : bool = great_player
         self.is_bad_coatch : bool = is_bad_coatch
+        self.longdate_member : bool = longdate_member
 
     def __str__(self):
         return (f"FFA win: {self.ffa_win}\nFFA play: {self.ffa_play}\n"
                 f"Teamer win: {self.teamer_win}\nTeamer play: {self.teamer_play}\n\n"
                 f"Begin FFA win: {self.begin_ffa_win}\nBegin FFA play: {self.begin_ffa_play}\n"
                 f"Begin Teamer win: {self.begin_teamer_win}\nBegin Teamer play: {self.begin_teamer_play}\n\n"
-                f"Great Player: {self.great_player}\nIs bad coatch: {self.is_bad_coatch}")
+                f"Great Player: {self.great_player}\nIs bad coatch: {self.is_bad_coatch}\nLongtime Player: {self.longdate_member}")
 
 class Match:
     def __init__(self, match_id, validated, report, check_msg_id=None):
@@ -87,7 +88,8 @@ class Database:
         begin_teamer_play INT NOT NULL DEFAULT 0,
         begin_teamer_win INT NOT NULL DEFAULT 0,
         great_player BOOLEAN NOT NULL DEFAULT 0,
-        is_bad_coatch BOOLEAN NOT NULL DEFAULT 0)
+        is_bad_coatch BOOLEAN NOT NULL DEFAULT 0,
+        longdate_member BOOLEAN NOT NULL DEFAULT 0)
         """)
         self.conn.execute("""
         CREATE TABLE IF NOT EXISTS Matchs
@@ -100,11 +102,11 @@ class Database:
 
     def get_stat_for(self, discord_id) -> PlayerStat:
         data = self.conn.execute("""
-            SELECT level, ffa_play, ffa_win, teamer_play, teamer_win, begin_ffa_play, begin_ffa_win, begin_teamer_play, begin_teamer_win, great_player, is_bad_coatch
+            SELECT level, ffa_play, ffa_win, teamer_play, teamer_win, begin_ffa_play, begin_ffa_win, begin_teamer_play, begin_teamer_win, great_player, is_bad_coatch, longdate_member
             FROM Players WHERE discord_id = ?""", (discord_id,))
         rt = data.fetchone()
         if not rt:
-            return PlayerStat(discord_id, *[0]*11)
+            return PlayerStat(discord_id, *[0]*12)
         return PlayerStat(discord_id, *rt)
 
     def manual_query_set(self, *args):
@@ -125,6 +127,13 @@ class Database:
         if win:
             self.set(discord_id, f"{txt}_win", getattr(pl, f"{txt}_win") + 1, create=False)
 
+    def unregister_plstats(self, discord_id : int, gameType : GameType, win : bool=False):
+        txt = GAMETYPE_TO_LOWERCASE[gameType]
+        pl = self.get_stat_for(discord_id)
+        self.set(discord_id, f"{txt}_play", getattr(pl, f"{txt}_play") - 1)
+        if win:
+            self.set(discord_id, f"{txt}_win", getattr(pl, f"{txt}_win") - 1, create=False)
+
     def add_match(self, match : Match):
         js = json.dumps(match.report.to_json())
         self.conn.execute("INSERT OR REPLACE INTO Matchs (id, check_msg_id, validated, json) VALUES (?, ?, ?, ?)",
@@ -135,6 +144,12 @@ class Database:
     def valid_match(self, match : Match):
         match.validated = True
         self.conn.execute('UPDATE Matchs SET validated = 1 WHERE id = ?',
+                          (match.id,))
+        self.conn.commit()
+
+    def unvalid_match(self, match : Match):
+        match.validated = True
+        self.conn.execute('UPDATE Matchs SET validated = 0 WHERE id = ?',
                           (match.id,))
         self.conn.commit()
 
