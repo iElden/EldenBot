@@ -235,7 +235,7 @@ class CmdCivFRLevel:
             if member.joined_at < lvl10cap:
                 db.set(member.id, "great_player", 1)
                 await recalc_role_for(member)
-                await channel.send(f"Le lvl 20 a été donnée à {member.mention} car il fait partie de l'équipe {role.mention}", allowed_mentions=discord.AllowedMentions(users=False, roles=False))
+                print(f"Gived lvl 10 to {member}")
                 break
             i += 1
             if i % 500 == 0:
