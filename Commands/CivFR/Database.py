@@ -63,9 +63,9 @@ class Match:
         if not self.report.players:
             return 0xE74C3C, "Aucun joueur n'est présent dans le report"
         if not all(i.is_valid() for i in self.report.players):
-            return 0xF1C40F, "Certain joueur possède des données invalides"
+            return 0xF1C40F, "Certains joueurs possèdent des données invalides"
         if len(self.report.players) < 4:
-            return 0xF1C40F, "Le report contient un nombre de joueur suspect"
+            return 0xF1C40F, "Le report contient un nombre de joueurs suspect"
         return 0x2ECC71, "En attente de validation"
 
 
