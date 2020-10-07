@@ -233,9 +233,12 @@ class CmdCivFRLevel:
         members = guild.members
         for member in members:
             if member.joined_at < lvl10cap:
-                db.set(member.id, "longdate_member", 1)
-                await recalc_role_for(member)
-                print(f"Gived lvl 10 to {member}")
+                try:
+                    db.set(member.id, "longdate_member", 1)
+                    await recalc_role_for(member)
+                    print(f"Gived lvl 10 to {member}")
+                except Exception as e:
+                    print(e)
             i += 1
             if i % 500 == 0:
                 await channel.send(f"Progression: {i}/{len(members)}")
