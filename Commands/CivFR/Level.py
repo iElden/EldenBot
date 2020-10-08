@@ -182,7 +182,7 @@ class CmdCivFRLevel:
             raise Forbidden("You must be Arbitre for use this command")
         if not args:
             raise InvalidArgs("Command must take one argument")
-        if args[0].isdigit():
+        if not args[0].isdigit():
             raise InvalidArgs("Argument must be a number")
         match = db.get_match(args[0])
         if not match:
