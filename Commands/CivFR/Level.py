@@ -1,8 +1,8 @@
-from typing import List, Set
+from typing import List, Set, Optional
 import discord
 import asyncio
 
-from util.function import get_member, list_to_block
+from util.function import get_member
 from util.exception import Forbidden, InvalidArgs, NotFound, ALEDException, BotError
 from util.decorator import only_owner
 from .utils import is_arbitre
@@ -95,15 +95,18 @@ async def on_message(message):
 async def on_reaction(payload : discord.RawReactionActionEvent, *, client : discord.Client):
     if payload.channel_id != REPORT_CHANNEL or str(payload.emoji) != TURKEY :
         return
-    civfr : discord.Guild = client.get_guild(CIVFR_GUILD_ID)
+    civfr: discord.Guild = client.get_guild(CIVFR_GUILD_ID)
     member : discord.Member = civfr.get_member(payload.user_id)
     if not member:
         raise ALEDException("Member not found on CivFR")
-    if not is_arbitre(member):
+    if not is_arbitre(member, client=client):
         return
-    match = db.get_match(payload.message_id)
+    await valid_report(payload.message_id, payload.channel_id, civfr, client, member.id)
+
+async def valid_report(message_id, channel_id, civfr, client, member_id) -> Optional[str]:
+    match = db.get_match(message_id)
     if not match or match.validated:
-        return
+        return "Le match n'existe pas ou a déjà été validé"
     db.valid_match(match)
     # update Players Stats database
     for i in match.report.players:
@@ -114,9 +117,10 @@ async def on_reaction(payload : discord.RawReactionActionEvent, *, client : disc
     tasks = [recalc_role_for(civfr.get_member(i.id)) for i in match.report.players]
     await asyncio.gather(*tasks)
     # Change embed
-    validation_msg = await client.get_channel(payload.channel_id).fetch_message(match.check_msg_id)
-    await validation_msg.edit(embed=match.to_embed())
+    validation_msg = await client.get_channel(channel_id).fetch_message(match.check_msg_id)
+    await validation_msg.edit(embed=match.to_embed(member_id))
     await validation_msg.clear_reactions()
+
 
 async def on_edit(payload : discord.RawMessageUpdateEvent, client):
     if payload.channel_id != REPORT_CHANNEL:
@@ -167,8 +171,8 @@ class CmdCivFRLevel:
         pl = db.get_stat_for(target.id)
         await channel.send(str(pl))
 
-    async def cmd_setcivfr(self, *args, member, guild, channel, force, **_):
-        if not is_arbitre(member) and not force:
+    async def cmd_setcivfr(self, *args, member, guild, channel, force, client, **_):
+        if not is_arbitre(member, client=client) and not force:
             raise Forbidden("You must be Arbitre for use this command")
         member = guild.get_member(int(args[0]))
         if not member:
@@ -177,8 +181,8 @@ class CmdCivFRLevel:
         await channel.send("Stats changed")
         await recalc_role_for(member)
 
-    async def cmd_unvalidreport(self, *args, member, force, client, **_):
-        if not is_arbitre(member) and not force:
+    async def cmd_unvalidreport(self, *args, member, force, client, channel, **_):
+        if not is_arbitre(member, client=client) and not force:
             raise Forbidden("You must be Arbitre for use this command")
         if not args:
             raise InvalidArgs("Command must take one argument")
@@ -201,8 +205,22 @@ class CmdCivFRLevel:
         await asyncio.gather(*tasks)
         # Change embed
         validation_msg = await client.get_channel(REPORT_CHANNEL).fetch_message(match.check_msg_id)
-        await validation_msg.edit(embed=match.to_embed())
+        await validation_msg.edit(embed=match.to_embed(member.id))
         await validation_msg.clear_reactions()
+        await channel.send("Match invalidé.")
+
+    async def cmd_validreport(self, *args, member, force, client, guild, channel, **_):
+        if not is_arbitre(member, client=client) and not force:
+            raise Forbidden("You must be Arbitre for use this command")
+        if not args:
+            raise InvalidArgs("Command must take one argument")
+        if not args[0].isdigit():
+            raise InvalidArgs("Argument must be a number")
+        r = await valid_report(int(args[0]), channel.id, guild, client, member)
+        if r:
+            raise BotError(r)
+        else:
+            await channel.send("Report validé de force")
 
 
     @only_owner

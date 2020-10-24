@@ -2,6 +2,7 @@ import sqlite3 as sq3
 import json
 import discord
 from typing import Optional, Tuple
+from enum import IntEnum
 
 from .ReportParser import Report, GameType
 from util.exception import InvalidArgs
@@ -12,6 +13,13 @@ GAMETYPE_TO_LOWERCASE = {
     GameType.BEGIN_TEAMER: "begin_teamer",
     GameType.TEAMER: "teamer"
 }
+
+class Color(IntEnum):
+    BLUE = 0x3498DB
+    GREEN = 0x2ECC71
+    YELLOW = 0xF1C40F
+    RED = 0xE74C3C
+    PURPLE = 0x9B59B6
 
 class PlayerStat:
     def __init__(self, discord_id, level, ffa_play, ffa_win, teamer_play, teamer_win, begin_ffa_play, begin_ffa_win,
@@ -44,29 +52,45 @@ class Match:
         self.validated : bool = validated
         self.report : Report = report
 
-    def to_embed(self) -> discord.Embed:
-        colour, txt = self.get_warning()
+    def to_embed(self, author_id : Optional[int]=None) -> discord.Embed:
+        colour, txt = self.get_warning(author_id)
         em = discord.Embed(title="ReportParser",
                            description=f"Gametype : {self.report.gametype and self.report.gametype.value}\n\n{self.report.players_to_strings()}",
-                           color=colour)
+                           color=colour.value)
         if txt:
             em.add_field(name="Status", value=txt)
         return em
 
-    def get_warning(self) -> Tuple[int, Optional[str]]:
+    def get_warning(self, author_id : Optional[int]) -> Tuple[Color, Optional[str]]:
+        color, string = self._get_warning()
         if self.validated:
-            return 0x3498DB, "Report validé"
-        if not self.report or not self.report.players:
-            return 0xE74C3C, "Le report ne contient aucun joueur"
+            if author_id and color == Color.GREEN:
+                return Color.BLUE, f"Report validé par <@{author_id}>"
+            elif author_id:
+                return Color.PURPLE, f"Report validé par <@{author_id}> MAIS\n{string}"
+            elif color == Color.GREEN:
+                return Color.BLUE, f"Report validé"
+            else:
+                return Color.PURPLE, f"Report validé MAIS\n{string}"
+        return color, string
+
+    def _get_warning(self) -> Tuple[Color, Optional[str]]:
+        if not self.report:
+            return Color.RED, "Le parsing du report à complètement foiré"
         if not self.report.gametype:
-            return 0xE74C3C, "Le report ne contient pas le type de partie ou ce dernier n'est pas reconnu"
+            return Color.RED, "Le report ne contient pas le type de partie ou ce dernier n'est pas reconnu"
         if not self.report.players:
-            return 0xE74C3C, "Aucun joueur n'est présent dans le report"
+            return Color.RED, "Aucun joueur n'est présent dans le report"
         if not all(i.is_valid() for i in self.report.players):
-            return 0xF1C40F, "Certains joueurs possèdent des données invalides"
-        if len(self.report.players) < 4:
-            return 0xF1C40F, "Le report contient un nombre de joueurs suspect"
-        return 0x2ECC71, "En attente de validation"
+            return Color.YELLOW, "Certains joueurs possèdent des données invalides"
+        if len(self.report.players) < 6:
+            return Color.YELLOW, "Le report contient un nombre de joueurs suspect"
+        if (self.report.gametype in [GameType.BEGIN_TEAMER, GameType.TEAMER] and
+            len([i for i in self.report.players if i.position == 1]) != len([i for i in self.report.players if i.position == 2])):
+            return Color.YELLOW, "Les équipes ne contienne pas le même nombre de joueur"
+        if self.report.gametype in [GameType.BEGIN_TEAMER, GameType.TEAMER] and any([i for i in self.report.players if i.position not in [1, 2]]):
+            return Color.YELLOW, "Les équipes ne contienne pas le même nombre de joueur"
+        return Color.GREEN, "En attente de validation"
 
 
 class Database:
@@ -140,7 +164,6 @@ class Database:
                           (match.id, match.check_msg_id, match.validated, js))
         self.conn.commit()
 
-
     def valid_match(self, match : Match):
         match.validated = True
         self.conn.execute('UPDATE Matchs SET validated = 1 WHERE id = ?',
@@ -165,7 +188,6 @@ class Database:
             return None
         js = json.loads(rt[3])
         return Match(int(rt[0]), bool(rt[2]), Report.from_json(js), rt[1] and int(rt[1]))
-
 
 db = Database()
 db.create_tables()
