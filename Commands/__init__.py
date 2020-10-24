@@ -28,6 +28,7 @@ from .reactions import CmdReaction
 from .rgapi import CmdRgapi
 from .roll import CmdRoll
 from .uselesscmd import CmdUseless
+from .Utility import CmdUtility
 from .verif import CmdVerif
 from LoupGarou.lg import CmdLg
 
@@ -36,7 +37,7 @@ class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
               CmdVerif, CmdLolScore, CmdMusic, CmdModeration, CmdLg,
               CmdMoney, CmdInfos, CmdUseless, CmdHelp,
               CmdJdr, CmdLoLQuizz, CmdTFT, CmdLinq, CmdCivFR, CmdFFATournament,
-              CmdReaction):
+              CmdReaction, CmdUtility):
     sleep = False
 
     @only_owner
