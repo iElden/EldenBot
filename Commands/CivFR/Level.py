@@ -23,9 +23,9 @@ ROLE = {
 REPORT_CHANNEL = 761277487057469460
 OBSOLETE_ROLES = {
     "10": [],
-    "15Teamer": [],
+    "15Teamer": ["10"],
     "20FFA": [],
-    "20Teamer": ["10", "15Teamer"],
+    "20Teamer": ["15Teamer"],
     "25": ["20Teamer", "20FFA"],
     "30": ["25"]
 }
@@ -278,7 +278,10 @@ class CmdCivFRLevel:
             member = civfr.get_member(discord_id)
             if not member:
                 continue
-            await recalc_role_for(member)
+            try:
+                await recalc_role_for(member)
+            except:
+                pass
             i += 1
             if i % 50 == 0:
                 await channel.send(f"Progression: {i}/{len(players_id)}")
