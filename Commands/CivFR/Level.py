@@ -13,6 +13,7 @@ from .Database import db, PlayerStat, Match
 
 ROLE = {
     "10": 754681667037429840,
+    "15Teamer": 770361077224964178,
     "20FFA": 754681661425451058,
     "20Teamer": 754681664629899375,
     "25": 754685865292333087,
@@ -22,8 +23,9 @@ ROLE = {
 REPORT_CHANNEL = 761277487057469460
 OBSOLETE_ROLES = {
     "10": [],
+    "15Teamer": [],
     "20FFA": [],
-    "20Teamer": ["10"],
+    "20Teamer": ["10", "15Teamer"],
     "25": ["20Teamer", "20FFA"],
     "30": ["25"]
 }
@@ -57,12 +59,16 @@ class Requirement:
         return player_stat.begin_ffa_play >= 10 or player_stat.longdate_member
 
     @classmethod
+    def level_15_teamer(cls, player_stat : PlayerStat) -> bool:
+        return player_stat.begin_teamer_win >= 10 or player_stat.great_player
+
+    @classmethod
     def level_20_ffa(cls, player_stat : PlayerStat) -> bool:
         return player_stat.begin_ffa_win >= 10 or player_stat.great_player
 
     @classmethod
     def level_20_teamer(cls, player_stat : PlayerStat) -> bool:
-        return player_stat.begin_teamer_win >= 10 or player_stat.great_player
+        return player_stat.teamer_win >= 10 or player_stat.begin_teamer_win >= 60
 
     @classmethod
     def level_25(cls, player_stat : PlayerStat) -> bool:
@@ -74,6 +80,7 @@ class Requirement:
 
     ROLE_REQUIREMENT = {
         "10": level_10.__func__,
+        "15Teamer": level_15_teamer.__func__,
         "20FFA": level_20_ffa.__func__,
         "20Teamer": level_20_teamer.__func__,
         "25": level_25.__func__,
@@ -261,4 +268,18 @@ class CmdCivFRLevel:
             if i % 500 == 0:
                 await channel.send(f"Progression: {i}/{len(members)}")
         await channel.send("DONE")
+
+    @only_owner
+    async def cmd_civfrrefreshallroles(self, *args, client, channel, **_):
+        players_id : List[id] = db.get_all_players()
+        civfr = client.get_guild(CIVFR_GUILD_ID)
+        i = 0
+        for discord_id in players_id:
+            member = civfr.get_member(discord_id)
+            if not member:
+                continue
+            await recalc_role_for(member)
+            i += 1
+            if i % 50 == 0:
+                await channel.send(f"Progression: {i}/{len(players_id)}")
 

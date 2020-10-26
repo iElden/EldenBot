@@ -189,5 +189,10 @@ class Database:
         js = json.loads(rt[3])
         return Match(int(rt[0]), bool(rt[2]), Report.from_json(js), rt[1] and int(rt[1]))
 
+    def get_all_players(self):
+        data = self.conn.execute("SELECT discord_id FROM Players")  # execute a simple SQL select query
+        players = data.fetchall()  # get all the results from the above query
+        return [i[0] for i in players]
+
 db = Database()
 db.create_tables()
