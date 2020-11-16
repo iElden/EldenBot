@@ -24,6 +24,7 @@ ROLE = {
 REPORT_CHANNEL = 761277487057469460
 OBSOLETE_ROLES = {
     "10": [],
+    "15FFA": [],
     "15Teamer": ["10"],
     "20FFA": ["15FFA"],
     "20Teamer": ["15Teamer"],
