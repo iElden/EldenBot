@@ -13,6 +13,7 @@ from .Database import db, PlayerStat, Match
 
 ROLE = {
     "10": 754681667037429840,
+    "15FFA": 777882591500042272,
     "15Teamer": 770361077224964178,
     "20FFA": 754681661425451058,
     "20Teamer": 754681664629899375,
@@ -24,7 +25,7 @@ REPORT_CHANNEL = 761277487057469460
 OBSOLETE_ROLES = {
     "10": [],
     "15Teamer": ["10"],
-    "20FFA": [],
+    "20FFA": ["15FFA"],
     "20Teamer": ["15Teamer"],
     "25": ["20Teamer", "20FFA"],
     "30": ["25"]
@@ -59,12 +60,16 @@ class Requirement:
         return player_stat.begin_ffa_play >= 10 or player_stat.longdate_member
 
     @classmethod
+    def level_15_ffa(cls, player_stat : PlayerStat) -> bool:
+        return player_stat.begin_ffa_win >= 10 or player_stat.great_player
+
+    @classmethod
     def level_15_teamer(cls, player_stat : PlayerStat) -> bool:
         return player_stat.begin_teamer_win >= 10 or player_stat.great_player
 
     @classmethod
     def level_20_ffa(cls, player_stat : PlayerStat) -> bool:
-        return player_stat.begin_ffa_win >= 10 or player_stat.great_player
+        return player_stat.begin_ffa_win >= 60
 
     @classmethod
     def level_20_teamer(cls, player_stat : PlayerStat) -> bool:
@@ -80,6 +85,7 @@ class Requirement:
 
     ROLE_REQUIREMENT = {
         "10": level_10.__func__,
+        "15FFA": level_15_ffa.__func__,
         "15Teamer": level_15_teamer.__func__,
         "20FFA": level_20_ffa.__func__,
         "20Teamer": level_20_teamer.__func__,
