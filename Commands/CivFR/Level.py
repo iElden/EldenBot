@@ -175,7 +175,7 @@ async def recalc_role_for(member):
 
 class CmdCivFRLevel:
     async def cmd_getstats(self, *args, member, channel, guild, force, **_):
-        if not is_civfr_guild_or_mp(channel) and channel.id != 258920360907374593 and not force:
+        if isinstance(channel, discord.DMChannel) and channel.id != 258920360907374593 and not force:
             raise Forbidden("Arrêtez de spam les mauvais chan")
         if not args:
             target = member
