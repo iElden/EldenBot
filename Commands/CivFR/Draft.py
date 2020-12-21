@@ -11,7 +11,7 @@ PERSONA_BANS = ["franceeleonore", "teddyroughrider", "catherinemagnifique"]
 RF_BANS = ["cris", "paysbas", "georgie", "chandragupta", "coree", "mapuches", "mongolie", "ecosse", "zoulous"]
 GS_BANS = ["hongrie", "maoris", "canada", "incas", "mali", "suede", "ottomans", "phenicie", "angleterreeleonore", "franceeleonore"]
 DLC_BANS = ["azteques", "pologne", "australie", "perse", "macedoine", "nubie", "khmer", "indonesie"]
-NFP_BANS = ["mayas", "ethiopie", "catherinemagnifique", "teddyroughrider"]
+NFP_BANS = ["mayas", "colombie", "ethiopie", "catherinemagnifique", "teddyroughrider", "byzance", "gaule", "babylone"]
 SPECIAL_BANS = {
     "persona": PERSONA_BANS,
     "r&f": RF_BANS,
