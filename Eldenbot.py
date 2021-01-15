@@ -28,7 +28,7 @@ if __name__ == '__main__':
     from Commands import Command
     command = Command()
 
-client = discord.Client(activity=discord.Game("type /help for commands"), allowed_mentions=discord.AllowedMentions(everyone=False))
+client = discord.Client(activity=discord.Game("type /help for commands"), allowed_mentions=discord.AllowedMentions(everyone=False), intents=discord.Intents.all())
 logger = logging.getLogger("Main")
 
 NO_COMMANDS_SERVER = [] #[197418659067592708]
