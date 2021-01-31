@@ -32,12 +32,15 @@ def get_raw_draft(nb : int, *args) -> Iterable[List[Leader]]:
             sp = SPECIAL_BANS.get(ban.lower())
             if sp:
                 for i in sp:
-                    pool.remove(leaders.get_leader_named(i))
+                    l = leaders.get_leader_named(i)
+                    if l in pool:
+                        pool.remove(l)
             else:
                 lead = leaders.get_leader_named(ban)
                 if not lead:
                     raise InvalidArgs(f"Leader \"{ban}\" non trouvé")
-                pool.remove(lead)
+                if lead in pool:
+                    pool.remove(lead)
     leader_per_player = len(pool) // nb
     if len(args) >= 2:
         if args[1] != 'max':
