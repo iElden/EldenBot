@@ -7,11 +7,12 @@ from util.exception import InvalidArgs
 from util.function import get_member_in_channel
 from .Leaders import leaders, Leader
 
-PERSONA_BANS = ["franceeleonore", "teddyroughrider", "catherinemagnifique"]
+PERSONA_BANS = ["franceeleonore", "teddyroughrider", "catherinemagnifique", "kublaimongolie"]
 RF_BANS = ["cris", "paysbas", "georgie", "chandragupta", "coree", "mapuches", "mongolie", "ecosse", "zoulous"]
 GS_BANS = ["hongrie", "maoris", "canada", "incas", "mali", "suede", "ottomans", "phenicie", "angleterreeleonore", "franceeleonore"]
 DLC_BANS = ["azteques", "pologne", "australie", "perse", "macedoine", "nubie", "khmer", "indonesie"]
-NFP_BANS = ["mayas", "colombie", "ethiopie", "catherinemagnifique", "teddyroughrider", "byzance", "gaule", "babylone"]
+NFP_BANS = ["mayas", "colombie", "ethiopie", "catherinemagnifique", "teddyroughrider", "byzance", "gaule", "babylone",
+            "vietnam", "kublaichine", "kublaimongolie"]
 SPECIAL_BANS = {
     "persona": PERSONA_BANS,
     "r&f": RF_BANS,
