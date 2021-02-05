@@ -32,7 +32,8 @@ class DynamicDraft:
         PICK = 1
 
     def __init__(self, args, drafts_lines, cap1, cap2):
-        self.ban_per_team, self.pick_per_team = self._parse_args(args, len(drafts_lines))
+        self.ban_per_team, self.pick_per_team, self.base_timer = self._parse_args(args, len(drafts_lines))
+        self.timer = self.base_timer * 2
         self.ban_phase = [1, 2] * self.ban_per_team
         self.pick_phase = [1, 2] + [2, 1, 1, 2] * ((self.pick_per_team - 1) // 2) + ([] if self.pick_per_team % 2 else [2, 1])
         self.caps = (cap1, cap2)  # type: Tuple[discord.Member]
@@ -59,17 +60,34 @@ class DynamicDraft:
                 pick_per_team = int(args[4])
                 if pick_per_team > (draft_len - ban_per_team * 2) // 2:
                     raise InvalidArgs(f"There is not enough draft for this number of ban/pick per team")
-        return ban_per_team, pick_per_team
+        timer = 60
+        if len(args) >= 7:
+            if not args[5].isdigit():
+                raise InvalidArgs(f"Timer must be a int, not \"{args[6]}\"")
+            timer = int(timer)
+        return ban_per_team, pick_per_team, timer
 
     def to_embed(self):
-        em = discord.Embed(title="Dynamic Draft", description='\n'.join(self._get_draft()))
+        descs : List[str] = []
+        txt = ""
+        for i in self._get_draft():
+            if len(txt) + len(i) >= 2000:
+                descs.append(txt)
+                txt = i
+            else:
+                txt += '\n' + i
+        descs.append(txt)
+
+        em = discord.Embed(title="Dynamic Draft", description=descs[0])
+        if len(descs) > 1:
+            em.add_field(name="\u200b", value=descs[1], inline=False)
         if self.is_ended:
             em.add_field(name="Progression",
                          value=f"Draft terminé\n{ICONS[2]} Équipe de {self.caps[0].mention}\n{ICONS[3]} Équipe de {self.caps[1].mention}",
                          inline=False)
         else:
             em.add_field(name="Progression",
-                         value=f"```ml\n{self._get_phase()}``````md\n{self._get_phase_tl()}```\n{self._get_action_needed()}",
+                         value=f"```ml\n{self._get_phase()}``````md\n{self._get_phase_tl()}```\n{self._get_action_needed()} **({max(self.timer, 0)}s)**",
                          inline=False)
         return em
 
@@ -104,6 +122,8 @@ class DynamicDraft:
         return self.caps[self.get_team_needed_for_action() - 1]
 
     def update(self, n) -> bool:  # return true if finished
+        if n is None:  # player timeout
+            return self._next_phase()
         if n > len(self.drafts):
             return False
         if self.drafts[n].state != DraftLineState.NONE:
@@ -130,11 +150,17 @@ class DynamicDraft:
                 return True
         return False
 
+    def update_timer(self, n):
+        self.timer -= n
+
+    def reset_timer(self):
+        self.timer = self.base_timer * ((self.phase_nb <= 1) + 1)
+
 
 class CmdCivFRDDraft:
 
     async def cmd_ddraft(self, *args : str, channel, client, member, guild, **_):
-        """/ddraft {nb} {bans} {leader_per_draft} {pick_per_team} {ban_per_team}"""
+        """/ddraft {nb} {bans} {leader_per_draft} {pick_per_team} {ban_per_team} {timer}"""
         if not args:
             raise InvalidArgs("Command should take at least two parameter")
         if not args[1].isdigit():
@@ -149,13 +175,21 @@ class CmdCivFRDDraft:
 
         while True:
             try:
-                reaction, _ = await client.wait_for('reaction_add', timeout=600, check=lambda reaction, user: user == draft.get_member_needed_for_action() and reaction.message.id == msg.id)
+                reaction, _ = await client.wait_for('reaction_add', timeout=3, check=lambda reaction, user: user == draft.get_member_needed_for_action() and reaction.message.id == msg.id)
             except asyncio.TimeoutError:
-                raise Timeout(f"{draft.get_member_needed_for_action()} didn't perform any action in 10 minutes, the task has been destroyed.")
+                if draft.timer > -5:
+                    draft.update_timer(3)
+                    asyncio.create_task(msg.edit(embed=draft.to_embed()))
+                else:
+                    draft.reset_timer()
+                    draft.update(None)
+                    await msg.edit(embed=draft.to_embed())
+                continue
             try:
                 n = emoji.NB.index(str(reaction))
             except:
                 continue
+            draft.reset_timer()
             rt = draft.update(n)
             await msg.edit(embed=draft.to_embed())
             if rt:
