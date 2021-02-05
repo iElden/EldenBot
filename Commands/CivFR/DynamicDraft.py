@@ -62,9 +62,9 @@ class DynamicDraft:
                     raise InvalidArgs(f"There is not enough draft for this number of ban/pick per team")
         timer = 60
         if len(args) >= 7:
-            if not args[5].isdigit():
+            if not args[6].isdigit():
                 raise InvalidArgs(f"Timer must be a int, not \"{args[6]}\"")
-            timer = int(timer)
+            timer = int(args[6])
         return ban_per_team, pick_per_team, timer
 
     def to_embed(self):
@@ -154,7 +154,7 @@ class DynamicDraft:
         self.timer -= n
 
     def reset_timer(self):
-        self.timer = self.base_timer * ((self.phase_nb <= 1) + 1)
+        self.timer = self.base_timer * ((self.phase_nb <= 1 and self.phase == self.ActionType.BAN) + 1)
 
 
 class CmdCivFRDDraft:
