@@ -11,6 +11,7 @@ logger = logging.getLogger("CommandInitializer")
 logger.info("Loading commands")
 
 from .CivFR import CmdCivFR, CmdFFATournament
+from .BBG.Vote import CmdBBGDisplayVote
 from .JDR import CmdJdr
 from .TFT.CmdTFT import CmdTFT
 from .deleteallmessage import CmdDeleteAllMessage
@@ -37,7 +38,7 @@ class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
               CmdVerif, CmdLolScore, CmdMusic, CmdModeration, CmdLg,
               CmdMoney, CmdInfos, CmdUseless, CmdHelp,
               CmdJdr, CmdLoLQuizz, CmdTFT, CmdLinq, CmdCivFR, CmdFFATournament,
-              CmdReaction, CmdUtility):
+              CmdReaction, CmdUtility, CmdBBGDisplayVote):
     sleep = False
 
     @only_owner

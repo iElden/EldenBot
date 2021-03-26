@@ -46,7 +46,7 @@ class Leaders:
         return None
 
 class Leader:
-    def __init__(self, emoji_id, uuname, name, civ, *alias):
+    def __init__(self, emoji_id, uuname, name, civ, cpl, *alias):
         self.emoji_id = int(emoji_id)
         self.uuname = uuname
         self.name = name
@@ -72,6 +72,11 @@ class Leader:
         return False
 
     def __str__(self):
+        return self.to_string()
+
+    def to_string(self, server="default"):
+        if server == "CPL":
+            return self.cpl
         return self.civ
 
 def load_leaders():
