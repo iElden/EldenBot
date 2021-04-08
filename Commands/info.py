@@ -11,7 +11,7 @@ class CmdInfos:
         if args:
             member = get_member(guild, ' '.join(args))
             if not member:
-                raise NotFound("Membre non toruvé :(")
+                raise NotFound("Membre non trouvé :(")
         em = discord.Embed(title=member.display_name, colour=member.colour)
         em.add_field(name="Nom", value=member.name)
         em.add_field(name="Discriminator", value="#" + member.discriminator)
@@ -28,7 +28,7 @@ class CmdInfos:
         else:
             em.add_field(name="Roles", value='Aucun')
         em.add_field(name="Serveur rejoint", value=format_time(member.joined_at), inline=False)
-        em.add_field(name="Compte crée", value=format_time(member.created_at))
+        em.add_field(name="Compte créé", value=format_time(member.created_at))
         # p = await member.profile()
         # badge = {"Staff": p.staff, "Partenaire": p.partner, "Bug Hunter": p.bug_hunter,
         #          "Nitro": p.nitro, "Early Supporter": p.early_supporter, "Hypesquad": p.hypesquad,
