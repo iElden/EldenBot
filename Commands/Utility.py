@@ -18,8 +18,10 @@ class CmdUtility:
             if not target:
                 raise NotFound(f"Channel ID {args[1]} not found")
         else:
-            target = member.voice
-        members = get_member_in_channel(target)
+            if not member.voice or not member.voice.channel:
+                raise NotFound("Impossible de récupérer les joueurs : Vous n'êtes pas connecté à un channel vocal")
+            target = member.voice.channel
+        members = target.members
         if not members:
             raise NotFound("Member not found in channels")
         if not args:
