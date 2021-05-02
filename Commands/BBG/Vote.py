@@ -77,7 +77,10 @@ class CmdBBGDisplayVote:
         target = int(args[0])
         for vote_channel_id in [SERIOUS_VOTE_ID, CASUAL_VOTE_ID]:
             vote_channel : discord.TextChannel = client.get_channel(vote_channel_id)
-            message = await vote_channel.fetch_message(target)
+            try:
+                message = await vote_channel.fetch_message(target)
+            except discord.HTTPException:
+                message = None
             if message:
                 break
         else:

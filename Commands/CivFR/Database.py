@@ -189,6 +189,11 @@ class Database:
         js = json.loads(rt[3])
         return Match(int(rt[0]), bool(rt[2]), Report.from_json(js), rt[1] and int(rt[1]))
 
+    def get_all_matchs(self):
+        data = self.conn.execute("SELECT id, check_msg_id, validated, json FROM Matchs WHERE Validated = 1")
+        rts = data.fetchall()
+        return [Match(int(rt[0]), bool(rt[2]), Report.from_json(json.loads(rt[3])), rt[1] and int(rt[1])) for rt in rts]
+
     def get_all_players(self):
         data = self.conn.execute("SELECT discord_id FROM Players")  # execute a simple SQL select query
         players = data.fetchall()  # get all the results from the above query
