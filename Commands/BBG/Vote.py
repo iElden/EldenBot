@@ -79,7 +79,7 @@ class CmdBBGDisplayVote:
             vote_channel : discord.TextChannel = client.get_channel(vote_channel_id)
             try:
                 message = await vote_channel.fetch_message(target)
-            except discord.HTTPException:
+            except discord.errors.NotFound:
                 message = None
             if message:
                 break
