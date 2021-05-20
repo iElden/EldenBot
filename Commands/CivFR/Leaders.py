@@ -51,9 +51,10 @@ class Leader:
         self.uuname = uuname
         self.name = name
         self.civ = civ
+        self.cpl = cpl
         self.alias = alias
-        self.all_name = [i.lower() for i in [uuname, name, civ, *alias]]
-
+        self.all_name = [i.lower() for i in [uuname, name, civ, cpl, *alias]]
+        
     def __repr__(self):
         return f"<Leader: {self.uuname}>"
 
@@ -80,7 +81,7 @@ class Leader:
         return self.civ
 
 def load_leaders():
-    with open("data/leaders.csv", "r") as fd:
+    with open("public_data/leaders.csv", "r") as fd:
         leaders_array = csv.reader(fd, delimiter=',')
         leaders = Leaders([Leader(*leader_array) for leader_array in leaders_array])
         return leaders
