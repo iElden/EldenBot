@@ -81,7 +81,7 @@ class Leader:
         return self.civ
 
 def load_leaders():
-    with open("public_data/leaders.csv", "r") as fd:
+    with open("public_data/leaders.csv", "r", encoding='utf-8') as fd:
         leaders_array = csv.reader(fd, delimiter=',')
         leaders = Leaders([Leader(*leader_array) for leader_array in leaders_array])
         return leaders

@@ -51,8 +51,10 @@ def get_raw_draft(nb : int, *args) -> Iterable[List[Leader]]:
     random.shuffle(pool)
     return (pool[i * leader_per_player:i * leader_per_player + leader_per_player] for i in range(nb))
 
-def get_draft(nb : int, *args, client) -> List[str]:
+def get_draft(nb : int, *args, client, display_name=None) -> List[str]:
     pools = get_raw_draft(nb, *args)
+    if display_name == "cpl":
+        return [','.join(f"{client.get_emoji(j.emoji_id)} {j.cpl}" for j in pool) for pool in pools]
     return [','.join(f"{client.get_emoji(j.emoji_id)} {j.civ}" for j in pool) for pool in pools]
 
 class BlindDraft:
@@ -131,7 +133,7 @@ async def draw_draft(drafts, generator, channel):
 
 # COMMAND
 class CmdCivDraft:
-    async def cmd_draft(self, *args : str, channel, client, member, **_):
+    async def cmd_draft(self, *args : str, channel, client, member,guild,  **_):
         if not args:
             raise InvalidArgs("Command should take at least one parameter")
         if args[0].lower() == 'ffa':
@@ -143,7 +145,10 @@ class CmdCivDraft:
                 raise InvalidArgs("1st Argument must be a integer (exemple: ``/draft 2``) or 'FFA'")
             nb = int(args[0])
             generator = (f"n°{i+1}" for i in range(nb))
-        drafts = get_draft(nb, *args[1:], client=client)
+        if guild and guild.id in [291751672106188800, 746790444171657347, 745407180638912582]:
+            drafts = get_draft(nb, *args[1:], client=client, display_name="cpl")
+        else:
+            drafts = get_draft(nb, *args[1:], client=client)
         await draw_draft(drafts, generator, channel)
 
 
