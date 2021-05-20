@@ -14,7 +14,7 @@ class CmdUtility:
         if len(args) >= 2:
             if not args[1].isdigit():
                 raise InvalidArgs("2nd Argument must be a channel ID")
-            target = client.get_channel(args[1])
+            target = client.get_channel(int(args[1]))
             if not target:
                 raise NotFound(f"Channel ID {args[1]} not found")
         else:
@@ -35,5 +35,5 @@ class CmdUtility:
         x = 0
         for i in range(nb):
             y = div+(i<mod)
-            await channel.send(f"`group {i+1}`: {''.join(f'<@{i.id}>' for i in members[x:x+y])}")
+            await channel.send(f"`group {i+1}`: {', '.join(f'<@{i.id}>' for i in members[x:x+y])}")
             x += y
