@@ -145,7 +145,7 @@ class CmdCivDraft:
                 raise InvalidArgs("1st Argument must be a integer (exemple: ``/draft 2``) or 'FFA'")
             nb = int(args[0])
             generator = (f"n°{i+1}" for i in range(nb))
-        if guild and guild.id in [291751672106188800, 746790444171657347, 745407180638912582]:
+        if guild and guild.id in [291751672106188800, 746790444171657347, 745407180638912582, 365593396548730883]:
             drafts = get_draft(nb, *args[1:], client=client, display_name="cpl")
         else:
             drafts = get_draft(nb, *args[1:], client=client)
