@@ -88,7 +88,7 @@ async def on_raw_message_delete(payload : discord.RawMessageDeleteEvent):
 async def on_message(m):
     if command.sleep and m.content != '/sleep':
         return
-    if m.content.startswith('/') :
+    if m.content.startswith('/') and not m.author.bot:
         if m.guild and m.guild.id in NO_COMMANDS_SERVER:
             logger.info(f"Cancel command on NO_COMMANDS_SERVER : <{m.author}> {m.content}")
             return

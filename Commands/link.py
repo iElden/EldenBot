@@ -3,6 +3,7 @@ import discord
 import logging
 from random_message import *
 from util.decorator import only_owner
+from util.function import get_webhook
 
 logger = logging.getLogger("Link")
 
@@ -68,26 +69,21 @@ async def delete(message, args):
 
 
 async def send_to_linked(client, message):
-    if str(message.channel.id) in linked.keys() and message.author != client.user:
-        em = discord.Embed(description=message.content,
-                           colour=message.author.colour,
-                           timestamp=message.created_at
-        )
+    if str(message.channel.id) in linked.keys() and not message.webhook_id:
+        txt = message.content
         try:
             if message.attachments:
-                em.set_image(url=message.attachments[0])
-        except:
-            pass
-        em.set_author(name=message.author.name,
-                      icon_url=message.author.avatar_url,
-                      url=message.jump_url
-        )
-        em.set_footer(icon_url=message.guild.icon_url,
-                      text= message.guild.name + " | #" +
-                      message.channel.name)
+                txt += "\n\n" + message.attachments.url
+        except Exception as e:
+            logger.warning(f"{e.__class__.__name__}: {e}")
         for channel in linked[str(message.channel.id)]:
-            try: await client.get_channel(channel).send(None,embed=em,)
-            except : pass
+            try:
+                webhook = await get_webhook(client.get_channel(channel))
+                await webhook.send(txt,
+                                   username=f"{message.author.name} (from {message.guild.name})",
+                                   avatar_url=message.author.avatar_url)
+            except Exception as e:
+                logger.error(f"{e.__class__.__name__}: {e}")
 
 class CmdLink:
     @only_owner
