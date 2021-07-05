@@ -3,7 +3,7 @@ import asyncio
 from typing import List, Iterable, Dict, Optional
 import random
 
-from util.exception import InvalidArgs
+from util.exception import InvalidArgs, AntiRelouException
 from util.function import get_member_in_channel
 from .Leaders import leaders, Leader
 
@@ -144,6 +144,8 @@ class CmdCivDraft:
             if not args[0].isdigit():
                 raise InvalidArgs("1st Argument must be a integer (exemple: ``/draft 2``) or 'FFA'")
             nb = int(args[0])
+            if nb > 100:
+                raise AntiRelouException("Atempting to run a draft with more than 100 lines")
             generator = (f"n°{i+1}" for i in range(nb))
         if guild and guild.id in [291751672106188800, 746790444171657347, 745407180638912582, 365593396548730883]:
             drafts = get_draft(nb, *args[1:], client=client, display_name="cpl")

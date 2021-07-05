@@ -24,3 +24,6 @@ class CommandCanceled(BotError):
 
 class Timeout(BotError):
     """raised when bot cancel command"""
+
+class AntiRelouException(BotException):
+    """Exception raise when a relou want to use the bot"""
