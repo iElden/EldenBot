@@ -147,7 +147,7 @@ class CmdCivDraft:
             if nb > 100:
                 raise AntiRelouException("Atempting to run a draft with more than 100 lines")
             generator = (f"n°{i+1}" for i in range(nb))
-        if guild and guild.id in [291751672106188800, 746790444171657347, 745407180638912582, 365593396548730883]:
+        if guild and guild.id in [291751672106188800, 746790444171657347, 745407180638912582, 365593396548730883, 470335770972913664]:
             drafts = get_draft(nb, *args[1:], client=client, display_name="cpl")
         else:
             drafts = get_draft(nb, *args[1:], client=client)

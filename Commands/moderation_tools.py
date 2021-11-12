@@ -1,6 +1,6 @@
 import discord
 import datetime
-from util.decorator import can_manage_message
+from util.decorator import can_manage_message, only_owner
 from util.exception import InvalidArgs
 
 MOD_DELETED = ("Votre message a été supprimé par {} pour la raison suivante :"
@@ -20,6 +20,18 @@ async def move_message(msg, target, reason):
         await msg.author.send(reason)
 
 class CmdModeration:
+    @only_owner
+    async def cmd_jailaflemmedetoutbanalamain(self, *args, message : discord.Message, channel, member, **_):
+        for member in message.mentions:
+            try:
+                if len(member.roles) != 1:
+                    await channel.send(f"Error while banning {member.mention}, this member not have only 1 role")
+                    continue
+                await member.ban(reason="Scam bot")
+                await channel.send(f"Banned {member.mention} for the following reason : Scam bot")
+            except:
+                pass
+
     @can_manage_message
     async def cmd_mdelete(self, *args, message, channel, member, **_):
         """/mdelete {message_id} [!][*raison]"""
