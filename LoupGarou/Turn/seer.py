@@ -1,11 +1,11 @@
 from LoupGarou.decorator import is_alive
-import discord
+import nextcord
 
 @is_alive("voyante")
 async def seer(game, player):
     check = lambda message: message.author == player.member
 
-    em = discord.Embed(title="Joueur en vie",
+    em = nextcord.Embed(title="Joueur en vie",
                        description='\n'.join(
                             ['- ' + i.name for i in game.alive if i != player]
                       ))

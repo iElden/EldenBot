@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import logging
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -37,7 +37,7 @@ class GDocDB:
 
 gdb = GDocDB()
 
-async def get_webhook(channel : discord.TextChannel) -> discord.Webhook:
+async def get_webhook(channel : nextcord.TextChannel) -> nextcord.Webhook:
     webhooks = await channel.webhooks()
     for webhook in webhooks:
         if webhook.name == WEBHOOK_NAME:
@@ -52,7 +52,7 @@ async def get_pnj(ll : [list], pnj_name : str) -> list:
             return line
     return None
 
-async def pnj_say(message: discord.Message):
+async def pnj_say(message: nextcord.Message):
     ll = gdb[message.guild.id]
     if ll is None:
         return
@@ -79,6 +79,6 @@ class CmdPNJManager:
         gdb.refresh()
         await channel.send("Updated")
 
-    async def pnj_manager_on_message(self, message: discord.Message):
+    async def pnj_manager_on_message(self, message: nextcord.Message):
         if message.content.startswith(">>"):
             await pnj_say(message)

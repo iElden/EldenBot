@@ -1,5 +1,5 @@
 import requests
-import discord
+import nextcord
 import random
 import logging
 import asyncio
@@ -59,7 +59,7 @@ class RandomSpell:
         return BASE_URL_SPELL + self.image_endurl
 
     def to_embed(self, *, with_image=False, footer_text=None):
-        em = discord.Embed(title=EMBED_TITLE, description=self.name)
+        em = nextcord.Embed(title=EMBED_TITLE, description=self.name)
         if with_image:
             em.set_thumbnail(url=self.image_url)
         if footer_text:
@@ -86,7 +86,7 @@ class CmdLoLQuizz:
         """
         Args:
             *args:
-            channel (discord.TextChannel):
+            channel (nextcord.TextChannel):
             **_:
 
         Returns:
@@ -123,7 +123,7 @@ class CmdLoLQuizz:
                         with_image=True
                     ))
                 try:
-                    answer = await client.wait_for('message', check=check, timeout=15)  # type: discord.Message
+                    answer = await client.wait_for('message', check=check, timeout=15)  # type: nextcord.Message
                 except asyncio.TimeoutError:
                     second_time = True
                     continue

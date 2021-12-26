@@ -1,6 +1,6 @@
 import gspread
 import random
-import discord
+import nextcord
 from oauth2client.service_account import ServiceAccountCredentials as sac
 
 class Announce:
@@ -11,11 +11,11 @@ class Announce:
         self.title = line[2] if line[2] else None
         self.texts = [ann for ann in line[3:] if ann]
     async def send(self, author=None, mp=False, image=None,
-                   title_args=(), desc_args=None) -> discord.Message:
+                   title_args=(), desc_args=None) -> nextcord.Message:
         if desc_args is None:
             desc_args = {}
         channel = author if mp else self.game.channel
-        em = discord.Embed(title=self.title.format(*title_args), colour=self.color,
+        em = nextcord.Embed(title=self.title.format(*title_args), colour=self.color,
                            description=random.choice(self.texts).format(**desc_args))
         if author:
             em.set_author(name=author.name, icon_url=author.avatar_url)

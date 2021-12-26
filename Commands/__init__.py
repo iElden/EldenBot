@@ -1,7 +1,7 @@
 import sys
 import os
 import math
-import discord
+import nextcord
 import signal
 import subprocess
 import logging
@@ -45,9 +45,9 @@ class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
     async def cmd_sleep(self, *_, channel, client, **__):
         self.sleep = not self.sleep
         if self.sleep:
-            await client.change_presence(status=discord.Status.dnd)
+            await client.change_presence(status=nextcord.Status.dnd)
         else:
-            await client.change_presence(status=discord.Status.online)
+            await client.change_presence(status=nextcord.Status.online)
         await channel.send("switch sleep to {}".format(self.sleep))
 
     @only_owner
@@ -76,7 +76,7 @@ class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
 
     @only_owner
     async def cmd_delmsg(self, *args, message, client, **_):
-        target_chan = client.get_channel(int(args[0])) # type: discord.TextChannel
+        target_chan = client.get_channel(int(args[0])) # type: nextcord.TextChannel
         await (await target_chan.fetch_message(int(args[1]))).delete()
         try:
             await message.delete()

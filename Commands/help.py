@@ -1,7 +1,7 @@
-import discord
+import nextcord
 from util.exception import NotFound
 
-from discord import TextChannel
+from nextcord import TextChannel
 
 helper = {
     "MithJDR": {
@@ -77,7 +77,7 @@ helper = {
 class CmdHelp:
     async def cmd_help(self, *args, channel, **_):
         if not args:
-            em = discord.Embed(title="Help")
+            em = nextcord.Embed(title="Help")
             em.set_footer(text="Entrez /help {module} pour plus de détail")
             for k, v in helper.items():
                 em.add_field(name=f"**{k}**",
@@ -85,7 +85,7 @@ class CmdHelp:
             await channel.send(embed=em)
         elif args[0] in helper:
             d = helper[args[0]]
-            em = discord.Embed(title=f"Help {args[0]}")
+            em = nextcord.Embed(title=f"Help {args[0]}")
             for k, v in d.items():
                 if v.startswith('``'):
                     a, t = v.split('``')[1], '``'.join(v.split('``')[2:])

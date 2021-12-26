@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import json
 import asyncio
 from pantheon import pantheon
@@ -109,7 +109,7 @@ class CmdLolScore:
         elif message.guild:
             target = message.guild.get_member_named(name)
             if target : colour = target.colour
-        em = discord.Embed(title="Information de l'invocateur", description=txt + "", colour=colour)
+        em = nextcord.Embed(title="Information de l'invocateur", description=txt + "", colour=colour)
         em.set_author(name=data['name'], icon_url=icon)
         await message.channel.send(embed=em)
         save_score(score)

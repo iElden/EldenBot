@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import youtube_dl
 import aiohttp
 import os
@@ -43,7 +43,7 @@ async def get_client(message, client):
         clients[str(message.guild.id)] = await MusicClient().create(message, client)
     return clients[str(message.guild.id)]
 
-class YTDLSource(discord.PCMVolumeTransformer):
+class YTDLSource(nextcord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
         super().__init__(source, volume)
 
@@ -62,7 +62,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             data = data['entries'][0]
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, **option), data=data)
+        return cls(nextcord.FFmpegPCMAudio(filename, **option), data=data)
 
 class Song:
     def __init__(self, url, ss=None):
@@ -102,7 +102,7 @@ class MusicClient:
         after = lambda e: asyncio.run_coroutine_threadsafe(self.play_next_music(), self.client.loop) if not e else print("ERR:", e)
         await asyncio.sleep(1)
         self.voice_client.play(player, after=after)
-        em = discord.Embed(title=song.title, description="now playing",
+        em = nextcord.Embed(title=song.title, description="now playing",
                            url=song.url)
         em.set_image(url=song.image)
         await self.notif_channel.send(embed=em)

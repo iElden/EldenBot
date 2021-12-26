@@ -6,7 +6,7 @@ from .DraftMsg import DraftMsg
 from util.exception import InvalidArgs, NotFound
 
 import random
-import discord
+import nextcord
 from typing import List
 import logging
 
@@ -21,13 +21,13 @@ class Functions:
         return random.choices(champ_list, k=nb)
 
     @staticmethod
-    async def on_champion_pick(payload : discord.RawReactionActionEvent, *, client):
+    async def on_champion_pick(payload : nextcord.RawReactionActionEvent, *, client):
         draft_msg = DraftMsg.get_msg(payload.message_id)
         if not draft_msg:
             return None
-        guild = client.get_guild(payload.guild_id)  # type: discord.Guild
-        member = guild.get_member(payload.user_id)  # type: discord.Member
-        channel = client.get_channel(payload.channel_id)  # type: discord.TextChannel
+        guild = client.get_guild(payload.guild_id)  # type: nextcord.Guild
+        member = guild.get_member(payload.user_id)  # type: nextcord.Member
+        channel = client.get_channel(payload.channel_id)  # type: nextcord.TextChannel
         champion = await draft_msg.pick_champions(member, int(str(payload.emoji)[0]))
         await Functions.add_champion(member, champion.name, channel=channel)
 

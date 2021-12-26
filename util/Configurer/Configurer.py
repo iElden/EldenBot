@@ -1,7 +1,7 @@
 from typing import Dict
 import json
 import re
-import discord
+import nextcord
 from asyncio import TimeoutError
 from os import path
 import logging
@@ -25,7 +25,7 @@ logger = logging.getLogger("Configurer")
 class Configurer:
     def __init__(self, pattern):
         logger.info("Creating new configurer")
-        self.msg = None  # type: discord.Message
+        self.msg = None  # type: nextcord.Message
         self.status = None
         self.file = None
 
@@ -48,9 +48,9 @@ class Configurer:
         Args:
             file (str): Path to the config file
             pattern (Dict[str, str]): Dict[option_name, option_type]
-            channel (discord.Channel): Discord Channel when the prompt will open
-            member (discord.User): Discord User who can edit the configuration
-            client (discord.Client): Discord Client object
+            channel (nextcord.Channel): Discord Channel when the prompt will open
+            member (nextcord.User): Discord User who can edit the configuration
+            client (nextcord.Client): Discord Client object
         Returns:
             Configurer: embed who can be edited
         """
@@ -71,7 +71,7 @@ class Configurer:
         continue_listen = True
         while continue_listen:
             try:
-                msg = await client.wait_for('message', check=check, timeout=timeout)  # type: discord.Message
+                msg = await client.wait_for('message', check=check, timeout=timeout)  # type: nextcord.Message
             except TimeoutError:
                 logger.info("Configurer listener timed out")
                 await channel.send("Time out: sauvegarde en cours ...")
@@ -85,12 +85,12 @@ class Configurer:
                 await channel.send(f"Error {e.__class__.__name__}: {e}", delete_after=delete_after)
             try:
                 await msg.delete()
-            except discord.HTTPException:
+            except nextcord.HTTPException:
                 pass
         logger.info("Exiting Configurer listener")
         return True
 
-    async def query(self, message: discord.Message) -> bool:
+    async def query(self, message: nextcord.Message) -> bool:
         logger.info(f"Reading Query from {message.author}: {message.content}")
         content = message.content  # type: str
         if content == "OK":
@@ -132,13 +132,13 @@ class Configurer:
     async def init_message(self, channel, member=None, client=None):
         if client and (not hasattr(channel, "guild") or not channel.guild.get_member(client.user.id).permissions_in(channel).manage_messages):
             await channel.send("AVERTISSEMENT: Le bot n'a pas la permission \"Manage messages\" et ne peux donc pas nettoyer automatiquement les query")
-        self.msg = await channel.send(embed=discord.Embed(title="Loading ..."))
+        self.msg = await channel.send(embed=nextcord.Embed(title="Loading ..."))
         await self.update_message(status=f"En édition par: {member.mention}")
 
     async def update_message(self, status=None):
         if status:
             self.status = status
-        em = discord.Embed(title="Configuration", description=self.status)
+        em = nextcord.Embed(title="Configuration", description=self.status)
         for k, v in self.params.items():
             display = str(v)
             em.add_field(name=f"{k} ({v.type})", value=display if display else "\u200b", inline=False)

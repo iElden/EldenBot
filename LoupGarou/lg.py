@@ -3,7 +3,7 @@ from LoupGarou.Loading.constant import *
 from LoupGarou.Loading.announce import load_images
 from LoupGarou.gameloop import game_loop
 from LoupGarou.option_manager import option_management
-import discord
+import nextcord
 import random
 
 
@@ -26,7 +26,7 @@ async def lg_start(message, argv, mj, client):
 
 
 async def distrib_role(players_list, game):
-    em = discord.Embed(title="distribution des role...", description="0/{}".format(len(players_list)))
+    em = nextcord.Embed(title="distribution des role...", description="0/{}".format(len(players_list)))
     notif = await game.channel.send(embed=em)
     players = []
     role_list  = ROLE_LIST[:len(players_list)]
@@ -34,7 +34,7 @@ async def distrib_role(players_list, game):
     plid = 0
     while players_list:
         plid += 1
-        em = discord.Embed(title="distribution des role...", description="{}/{}".format(plid, len(players_list)))
+        em = nextcord.Embed(title="distribution des role...", description="{}/{}".format(plid, len(players_list)))
         await notif.edit(embed=em)
         player_index = random.randint(0, len(players_list) - 1)
         role_index = random.randint(0, len(players_list) - 1)
@@ -48,7 +48,7 @@ async def distrib_role(players_list, game):
 
 async def create_plist(message, mj, client):
     players_list = [mj]
-    em = discord.Embed(title=START_PL_TITLE, description="")
+    em = nextcord.Embed(title=START_PL_TITLE, description="")
     msg = await message.channel.send(embed=em)
     await msg.add_reaction(OK_EMOJI)
 
@@ -64,7 +64,7 @@ async def create_plist(message, mj, client):
                 async for user in reaction.users():
                     if user != client.user:
                         players_list.append(user)
-        em = discord.Embed(title=START_PL_TITLE,
+        em = nextcord.Embed(title=START_PL_TITLE,
                            description="\n".join(["- " + i.name for i in players_list]))
         await msg.edit(embed=em)
         reaction, user = await client.wait_for('reaction_add', check=check)

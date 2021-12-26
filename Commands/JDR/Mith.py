@@ -1,5 +1,5 @@
 import json
-import discord
+import nextcord
 import gspread
 import re
 from random import randint, choice as random_choice
@@ -66,7 +66,7 @@ async def create_image(avatar_url, current_hp, max_hp, injury=False, knock=False
     """
 
     Args:
-        avatar_url (discord.Asset):
+        avatar_url (nextcord.Asset):
         current_hp (int):
         max_hp (int):
 
@@ -151,9 +151,9 @@ async def roll_by_comp(comp, name, bonus):
         comp (List[Tuple[str, int, COMP_LEVEL]]): comp sheet Tuple[comp_name, score]
         name (str): comp name the player want roll
         bonus (int): bonus/malus dice
-        member (discord.Member): discord member
-        message (discord.Message): discord message
-        channel (discord.Channel): discord channel
+        member (nextcord.Member): nextcord member
+        message (nextcord.Message): nextcord message
+        channel (nextcord.Channel): nextcord channel
     Returns: None
     """
     possibilities = [i for i in comp if i[0].startswith(name)]
@@ -197,10 +197,10 @@ class CmdJdrMith:
         """
         Args:
             *args (str):
-            member (discord.Member):
-            channel (discord.Channel):
-            guild (discord.Guild):
-            client (discord.Client):
+            member (nextcord.Member):
+            channel (nextcord.Channel):
+            guild (nextcord.Guild):
+            client (nextcord.Client):
             **_:
 
         Returns:
@@ -212,7 +212,7 @@ class CmdJdrMith:
             target = member
         else:
             membername = ' '.join(args[:-(len(args) - 1)])
-            target = get_member(guild, membername) # type: discord.Member
+            target = get_member(guild, membername) # type: nextcord.Member
             if not target:
                 raise NotFound(f"Member named {membername} not found")
         expr = args[-1]
@@ -236,7 +236,7 @@ class CmdJdrMith:
         knock = cell_list[2].value == 'TRUE'
         injury = cell_list[3].value == 'TRUE'
 
-        em = discord.Embed(colour=target.colour)
+        em = nextcord.Embed(colour=target.colour)
         if roll_result.dices:
             em.add_field(name="Lancé de dé", value=f"{member.mention} {roll_result.intro_sentence}\n{roll_result.format_results}")
         if damage > 0:
@@ -251,7 +251,7 @@ class CmdJdrMith:
 
         img = await create_image(target.avatar_url_as(format="png", size=1024), new_hp, int(cell_list[1].value), injury, knock)
 
-        trash_msg = await client.get_channel(POUBELLE_ID).send(file=discord.File(fp=img, filename="a.png")) #type: discord.Message
+        trash_msg = await client.get_channel(POUBELLE_ID).send(file=nextcord.File(fp=img, filename="a.png")) #type: nextcord.Message
         em.set_image(url=trash_msg.attachments[0].url)
         await msg.edit(embed=em)
 
@@ -264,7 +264,7 @@ class CmdJdrMith:
             args = "1d100"
         expr = "".join(args)
         r = roll(expr)
-        em = discord.Embed(
+        em = nextcord.Embed(
             title="Lancé de dés",
             description=f"{member.mention} {r.intro_sentence}\n\n{r.format_results}\n\nTotal : **{r.total}**",
             colour=member.colour
@@ -273,7 +273,7 @@ class CmdJdrMith:
         await client.get_user(203934874204241921).send(embed=em)
         try:
             await message.delete()
-        except discord.HTTPException:
+        except nextcord.HTTPException:
             pass
 
     @user_can_use_command
@@ -300,7 +300,7 @@ class CmdJdrMith:
             name, bonus = content, 0
 
         d = await roll_by_comp(comp, name.strip().lower(), bonus)
-        em = discord.Embed(
+        em = nextcord.Embed(
             title="Lancé de dés",
             description=COMPROLL_DESC.format(**d, member=member),
             colour=target.colour
@@ -334,7 +334,7 @@ class CmdJdrMith:
         datk = await roll_by_comp(parse_competences(wsh1), comp_atk.strip().lower(), atk_bonus)
         ddef = await roll_by_comp(parse_competences(wsh2), comp_def.strip().lower(), def_bonus)
 
-        em = discord.Embed(
+        em = nextcord.Embed(
             title="Lancé de dés",
             description=f"{attacker.mention} **vs** {defenser.mention}",
             colour=attacker.colour

@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional, Dict, Any
 from dataclasses import dataclass
-import discord
+import nextcord
 import re
 
 from util.exception import NotFound, InvalidArgs

@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import asyncio
 from util.exception import NotFound
 
@@ -10,7 +10,7 @@ BBGTEAM_ROLE_ID = 776858484108296192
 SPECIALIST_ROLE_ID = 438521431698178058
 
 class VoteDisplay:
-    def __init__(self, message, reaction_users : List[List[discord.Member]]):
+    def __init__(self, message, reaction_users : List[List[nextcord.Member]]):
         self.message = message
         self.reactions = message.reactions
         self.reaction_users = reaction_users
@@ -21,14 +21,14 @@ class VoteDisplay:
     def get_total_group(self, reaction_users, role_id) -> set:
         r = set()
         for user in sum(reaction_users, []):
-            if isinstance(user, discord.Member) and role_id in [role.id for role in user.roles]:
+            if isinstance(user, nextcord.Member) and role_id in [role.id for role in user.roles]:
                 r.add(user.id)
         return r
 
     def get_total_citizen(self, reaction_users) -> set:
         r = set()
         for user in sum(reaction_users, []):
-            if isinstance(user, discord.User):
+            if isinstance(user, nextcord.User):
                 r.add(user.id)
                 continue
             roles = [role.id for role in user.roles]
@@ -36,8 +36,8 @@ class VoteDisplay:
                 r.add(user.id)
         return r
 
-    def to_embed(self) -> discord.Embed:
-        em = discord.Embed(title="Vote result", description=self.message.content)
+    def to_embed(self) -> nextcord.Embed:
+        em = nextcord.Embed(title="Vote result", description=self.message.content)
         for name, ids in [("BBGTeam", self.total_bbg_team), ("Specialist", self.total_specialist), ("Citizen", self.total_citizen)]:
             ls = [f"{str(reaction)} : {self.get_count_str(members, ids)}"
                   for (reaction, members) in zip(self.reactions, self.reaction_users)]
@@ -63,10 +63,10 @@ class CmdBBGDisplayVote:
     async def cmd_bbgdisplayvote(self, *args, client, channel, **_):
         target = int(args[0])
         for vote_channel_id in [SERIOUS_VOTE_ID, CASUAL_VOTE_ID]:
-            vote_channel : discord.TextChannel = client.get_channel(vote_channel_id)
+            vote_channel : nextcord.TextChannel = client.get_channel(vote_channel_id)
             try:
                 message = await vote_channel.fetch_message(target)
-            except discord.errors.NotFound:
+            except nextcord.errors.NotFound:
                 message = None
             if message:
                 break
@@ -79,10 +79,10 @@ class CmdBBGDisplayVote:
     async def cmd_bbgdisplayvotefrom(self,  *args, client, channel, **_):
         target = int(args[0])
         for vote_channel_id in [SERIOUS_VOTE_ID, CASUAL_VOTE_ID]:
-            vote_channel : discord.TextChannel = client.get_channel(vote_channel_id)
+            vote_channel : nextcord.TextChannel = client.get_channel(vote_channel_id)
             try:
                 message = await vote_channel.fetch_message(target)
-            except discord.errors.NotFound:
+            except nextcord.errors.NotFound:
                 message = None
             if message:
                 break

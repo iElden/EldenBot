@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import asyncio
 from typing import List, Iterable, Dict, Optional
 import random
@@ -64,13 +64,13 @@ class BlindDraft:
         self.pool_per_member = {k.id: v for k, v in zip(self.members, self.pools)}  # type: Dict[int, List[Leader]]
         self.picks = {k.id: None for k in self.members}  # type: Dict[int, Optional[Leader]]
 
-    async def run(self, channel : discord.TextChannel, client):
-        msg = await channel.send(embed=discord.Embed(title="Blind draft", description="Envoie des drafts en cours !"))
+    async def run(self, channel : nextcord.TextChannel, client):
+        msg = await channel.send(embed=nextcord.Embed(title="Blind draft", description="Envoie des drafts en cours !"))
         tasks = (self.send_bdrafts(member, pool, client=client) for member, pool in zip(self.members, self.pools))
         mps = await asyncio.gather(*tasks)
         mp_per_member = {k.id: v for k, v in zip(self.members, mps)}
 
-        def check(reac_ : discord.Reaction, user_ : discord.User):
+        def check(reac_ : nextcord.Reaction, user_ : nextcord.User):
             return (user_.id in mp_per_member.keys() and
                     reac_.message.id in (i.id for i in mp_per_member.values()))
 
@@ -87,7 +87,7 @@ class BlindDraft:
 
     @staticmethod
     async def send_bdrafts(member, pool, *, client):
-        em = discord.Embed(title="Blind Draft",
+        em = nextcord.Embed(title="Blind Draft",
                            description='\n'.join(f"{client.get_emoji(i.emoji_id)} {i.civ}" for i in pool))
         em.add_field(name="Status", value="Cliquez sur une réaction pour choisir votre leader")
         msg = await member.send(embed=em)
@@ -97,13 +97,13 @@ class BlindDraft:
 
     @staticmethod
     async def edit_bdrafts(message, pool, *, client):
-        em = discord.Embed(title="Blind Draft",
+        em = nextcord.Embed(title="Blind Draft",
                            description='\n'.join(f"{client.get_emoji(i.emoji_id)} {i.civ}" for i in pool))
         em.add_field(name="Status", value="Vous avez choisis votre Leader !")
         await message.edit(embed=em)
 
     def get_embed(self, *, client):
-        em = discord.Embed(title="Blind Draft")
+        em = nextcord.Embed(title="Blind Draft")
         em.add_field(name="Joueurs", value='\n'.join(f"<@{i}>" for i in self.picks.keys()))
         if self.is_finished:
             em.add_field(name="Picks",

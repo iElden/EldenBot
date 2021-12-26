@@ -1,6 +1,6 @@
 import sqlite3 as sq3
 import json
-import discord
+import nextcord
 from typing import Optional, Tuple
 from enum import IntEnum
 
@@ -52,9 +52,9 @@ class Match:
         self.validated : bool = validated
         self.report : Report = report
 
-    def to_embed(self, author_id : Optional[int]=None) -> discord.Embed:
+    def to_embed(self, author_id : Optional[int]=None) -> nextcord.Embed:
         colour, txt = self.get_warning(author_id)
-        em = discord.Embed(title="ReportParser",
+        em = nextcord.Embed(title="ReportParser",
                            description=f"Gametype : {self.report.gametype and self.report.gametype.value}\n\n{self.report.players_to_strings()}",
                            color=colour.value)
         if txt:

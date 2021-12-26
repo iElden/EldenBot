@@ -1,4 +1,4 @@
-import discord
+import nextcord
 from copy import copy
 from typing import List, Tuple, Dict, Optional
 
@@ -15,14 +15,14 @@ class DynamicEmbed:
         """
         Args:
             fields (List[List[Tuple[str, str]]]):
-            base_embed (discord.Embed):
+            base_embed (nextcord.Embed):
         """
         self.fields = fields
         if not base_embed:
-            self.base_embed = discord.Embed()
+            self.base_embed = nextcord.Embed()
         else:
             self.base_embed = base_embed
-        self.message = None # type: Optional[discord.Message]
+        self.message = None # type: Optional[nextcord.Message]
         self.page = 1
         self.max_page = len(fields)
 
@@ -53,13 +53,13 @@ class DynamicEmbed:
     async def send_embed(self, channel):
         """
         Args:
-            channel (discord.TextChannel): channel to send the embed
+            channel (nextcord.TextChannel): channel to send the embed
 
         Returns:
-            discord.Message: the message sended
+            nextcord.Message: the message sended
         """
 
-        self.message = await channel.send(embed=discord.Embed(title="chargement"))
+        self.message = await channel.send(embed=nextcord.Embed(title="chargement"))
         self.dynamic_embeds[self.message.id] = self
         await self.edit_page(1)
         await self.message.add_reaction(EMOJI_FIRST_PAGE)
@@ -68,7 +68,7 @@ class DynamicEmbed:
         await self.message.add_reaction(EMOJI_LAST_PAGE)
 
 
-async def on_reaction_change(payload : discord.RawReactionActionEvent):
+async def on_reaction_change(payload : nextcord.RawReactionActionEvent):
     if payload.message_id in DynamicEmbed.dynamic_embeds:
         de = DynamicEmbed.dynamic_embeds[payload.message_id]
         emoji = str(payload.emoji)

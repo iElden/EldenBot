@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from random_message import DAILY_CLAIM
-import discord
+import nextcord
 import random
 import json
 
@@ -27,7 +27,7 @@ class MoneyDict:
             m = guild.get_member_named(member)
             if not m: return None
             else: return self._return_data(m.id)
-        if isinstance(member, discord.User) or isinstance(member, discord.Member):
+        if isinstance(member, nextcord.User) or isinstance(member, nextcord.Member):
             return self._return_data(member.id)
 
     def get_money(self, *args, **kwargs):

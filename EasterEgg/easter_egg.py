@@ -1,4 +1,4 @@
-import discord
+import nextcord
 
 REGEX = {
     rf"<@{client.user.id}> play"
@@ -7,6 +7,6 @@ REGEX = {
 
 async def easter_egg(message) -> bool:
     """
-    :type message: discord.Message
+    :type message: nextcord.Message
     :rtype: bool
     """

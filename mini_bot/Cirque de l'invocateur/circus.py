@@ -3,7 +3,7 @@ from flask import Flask, request
 from pantheon import pantheon
 import threading
 import time
-import discord
+import nextcord
 import asyncio
 import logging
 import traceback
@@ -31,7 +31,7 @@ def load_data():
 
 logging.basicConfig(level=logging.INFO)
 loop = asyncio.get_event_loop()
-client = discord.Client()
+client = nextcord.Client()
 app = Flask(__name__)
 data, summoners = load_data()
 start_msg = None
@@ -112,7 +112,7 @@ async def on_raw_reaction_remove(payload):
 
 async def verif(member):
     forum = client.get_guild(FORUM_GUILD_ID)
-    lie = discord.utils.get(member.guild.roles, id=474254455194517504)
+    lie = nextcord.utils.get(member.guild.roles, id=474254455194517504)
     if lie not in member.roles:
         fmember = forum.get_member(member.id)
         if "Vérifié" in [role.name for role in fmember.roles]:
@@ -122,7 +122,7 @@ async def verif(member):
             link_channel = client.get_channel(LINK_CHANNEL_ID)
             try:
                 await member.edit(nick=name)
-            except discord.errors.Forbidden:
+            except nextcord.errors.Forbidden:
                 pass
             await member.add_roles(lie, reason="Vérifié sur le discord du forum")
             await link_channel.send(ALREADY_VERIFIED.format(str(member), summId))

@@ -1,5 +1,5 @@
 from typing import List, Set, Optional
-import discord
+import nextcord
 import asyncio
 
 from util.function import get_member
@@ -106,11 +106,11 @@ async def on_message(message):
     db.add_match(match)
     await validation_msg.add_reaction(TURKEY)
 
-async def on_reaction(payload : discord.RawReactionActionEvent, *, client : discord.Client):
+async def on_reaction(payload : nextcord.RawReactionActionEvent, *, client : nextcord.Client):
     if payload.channel_id != REPORT_CHANNEL or str(payload.emoji) != TURKEY :
         return
-    civfr: discord.Guild = client.get_guild(CIVFR_GUILD_ID)
-    member : discord.Member = civfr.get_member(payload.user_id)
+    civfr: nextcord.Guild = client.get_guild(CIVFR_GUILD_ID)
+    member : nextcord.Member = civfr.get_member(payload.user_id)
     if not member:
         raise ALEDException("Member not found on CivFR")
     if not is_arbitre(member, client=client):
@@ -136,7 +136,7 @@ async def valid_report(message_id, channel_id, civfr, client, member_id) -> Opti
     await validation_msg.clear_reactions()
 
 
-async def on_edit(payload : discord.RawMessageUpdateEvent, client):
+async def on_edit(payload : nextcord.RawMessageUpdateEvent, client):
     if payload.channel_id != REPORT_CHANNEL:
         return
     match = db.get_match(payload.message_id)
@@ -149,7 +149,7 @@ async def on_edit(payload : discord.RawMessageUpdateEvent, client):
     await validation_msg.edit(embed=new_match.to_embed())
     db.add_match(new_match) # add_match use "INSERT OR UPDATE" SQL
 
-async def on_delete(payload : discord.RawMessageDeleteEvent, client):
+async def on_delete(payload : nextcord.RawMessageDeleteEvent, client):
     if payload.channel_id != REPORT_CHANNEL:
         return
     match = db.get_match(payload.message_id)
@@ -175,7 +175,7 @@ async def recalc_role_for(member):
 
 class CmdCivFRLevel:
     async def cmd_getstats(self, *args, member, channel, guild, force, **_):
-        if not isinstance(channel, discord.DMChannel) and channel.id != 258920360907374593 and not force:
+        if not isinstance(channel, nextcord.DMChannel) and channel.id != 258920360907374593 and not force:
             raise Forbidden("Arrêtez de spam les mauvais chan")
         if not args:
             target = member
@@ -216,7 +216,7 @@ class CmdCivFRLevel:
                                 match.report.gametype,
                                 i.position <= POSITION_REQUIRE_FOR_WIN[match.report.gametype])
         # Verif if players are eligible to new roles
-        civfr: discord.Guild = client.get_guild(CIVFR_GUILD_ID)
+        civfr: nextcord.Guild = client.get_guild(CIVFR_GUILD_ID)
         tasks = [recalc_role_for(civfr.get_member(i.id)) for i in match.report.players]
         await asyncio.gather(*tasks)
         # Change embed
@@ -240,7 +240,7 @@ class CmdCivFRLevel:
 
 
     @only_owner
-    async def cmd_civfrgivelvl20(self, *args, channel, guild : discord.Guild, **_):
+    async def cmd_civfrgivelvl20(self, *args, channel, guild : nextcord.Guild, **_):
         R = [652143977260122125, 682919453788471306, 682245125656805459, 708475004744106024, 708475862860824598, 751869750660956220,
              708475012624941107, 708475021621723137, 708475860348567612, 708475861606596612, 708475862693052438, 708475864110596107
              ]
@@ -252,7 +252,7 @@ class CmdCivFRLevel:
                 if role.id in R:
                     db.set(member.id, "great_player", 1)
                     await recalc_role_for(member)
-                    await channel.send(f"Le lvl 20 a été donnée à {member.mention} car il fait partie de l'équipe {role.mention}", allowed_mentions=discord.AllowedMentions(users=False, roles=False))
+                    await channel.send(f"Le lvl 20 a été donnée à {member.mention} car il fait partie de l'équipe {role.mention}", allowed_mentions=nextcord.AllowedMentions(users=False, roles=False))
                     break
             i += 1
             if i % 500 == 0:
@@ -260,7 +260,7 @@ class CmdCivFRLevel:
         await channel.send("DONE")
 
     @only_owner
-    async def cmd_civfrgivelvl10(self, *args, channel, guild : discord.Guild, **_):
+    async def cmd_civfrgivelvl10(self, *args, channel, guild : nextcord.Guild, **_):
         from datetime import datetime, timedelta
         lvl10cap = datetime.now() - timedelta(days=365//2)
         i = 0

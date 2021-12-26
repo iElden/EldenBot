@@ -1,7 +1,7 @@
 from util.exception import CommandCanceled, ALEDException
 
 from typing import Dict, Tuple
-import discord
+import nextcord
 import random
 import asyncio
 
@@ -17,7 +17,7 @@ class LinqGame:
         self.round = 1
         self.wordlist = None  # Loaded in load_wordlist
         self.channel = channel
-        self.discord_client = client
+        self.nextcord_client = client
 
     async def run(self):
         await self.load_wordlist()
@@ -67,19 +67,19 @@ class LinqRound:
     async def run(self): # -> RoundResult
         await self.announce_role()
         await self.game.channel.send(f"{self.game.mj.mention}: Merci d'envoyer ``OK`` quand le round est terminé (Round {self.game.round}/{self.game.max_round})")
-        await self.game.discord_client.wait_for('message', check=lambda m: m.author == self.game.mj and m.content == "OK")
+        await self.game.nextcord_client.wait_for('message', check=lambda m: m.author == self.game.mj and m.content == "OK")
         tasks = [self.ask_accusation(i) for i in self.game.players]
         accusation_result = await asyncio.gather(*tasks)
         return RoundResult(self, self.game.players, accusation_result)
 
     async def ask_accusation(self, player):
         if player in self.spy:
-            em = discord.Embed(
+            em = nextcord.Embed(
                 title="Trouvez votre allié",
                 description=self.get_player_list(exclude=player)).set_footer(text="Entre le nom de la personne dans le canal")
             asyncio.ensure_future(player.send(embed=em))
             while True:
-                msg = await self.game.discord_client.wait_for('message', check=lambda m: m.author == player and m.channel == player.dm_channel)
+                msg = await self.game.nextcord_client.wait_for('message', check=lambda m: m.author == player and m.channel == player.dm_channel)
                 pl = self.find_player(msg.content)
                 if pl == player:
                     asyncio.ensure_future(player.send("Vous ne pouvez pas vous désigner vous-même", delete_after=10))
@@ -90,11 +90,11 @@ class LinqRound:
             return [pl]
 
         # if player is a counter-spy
-        bot_msg = await player.send(embed=discord.Embed(title="Loading ..."))
+        bot_msg = await player.send(embed=nextcord.Embed(title="Loading ..."))
         player_list = self.get_player_list(exclude=player)
         r1 = r2 = None
         while True:
-            em = discord.Embed(title="Rapport de contre espionnage",
+            em = nextcord.Embed(title="Rapport de contre espionnage",
                                ).set_footer(text="Entre le nom de la personne dans le canal")
             em.add_field(name="Liste des joueurs", value=player_list)
             em.add_field(name="Liste des joueurs",
@@ -104,7 +104,7 @@ class LinqRound:
             if r1 and r2:
                 print("OK CS")
                 return [r1, r2]
-            msg = await self.game.discord_client.wait_for('message', check=lambda
+            msg = await self.game.nextcord_client.wait_for('message', check=lambda
                 m: m.author == player and m.channel == player.dm_channel)
             pl = self.find_player(msg.content)
             if pl == player:
@@ -120,10 +120,10 @@ class LinqRound:
 
 
     async def announce_role(self):
-        spy_em = discord.Embed(title="Vous êtes un espion !", description=f"Le code secret que vous devez faire passer est ``{self.passwd}``")
+        spy_em = nextcord.Embed(title="Vous êtes un espion !", description=f"Le code secret que vous devez faire passer est ``{self.passwd}``")
         for spy in self.spy:
             asyncio.ensure_future(spy.send(embed=spy_em))
-        counter_spy_em = discord.Embed(title="Vous êtes un contre-espion !", description="Démasquez les espions")
+        counter_spy_em = nextcord.Embed(title="Vous êtes un contre-espion !", description="Démasquez les espions")
         for counter_spy in self.counter_spy:
             asyncio.ensure_future(counter_spy.send(embed=counter_spy_em))
 
@@ -156,7 +156,7 @@ class Scoreboard:
         ls = sorted(self._scoreboard.items(), key=lambda x: x[1], reverse=True)
         for i, (player, score) in enumerate(ls):
             txt += f"{i}. {player.mention}: {score}\n"
-        em = discord.Embed(title="Tableau des scores", description=txt, colour=ls[0].colour)
+        em = nextcord.Embed(title="Tableau des scores", description=txt, colour=ls[0].colour)
         return em
 
     def update(self, roundresult):
@@ -184,7 +184,7 @@ class Scoreboard:
 
 class RoundResult:
     def __init__(self, linqround, players, acc_result):
-        self.player_report = {} # type: Dict[discord.Member, Dict[str, int]]
+        self.player_report = {} # type: Dict[nextcord.Member, Dict[str, int]]
         self.accusations = {i:j for i,j in zip(players, acc_result)}
 
         for pl, acc in self.accusations.items():
@@ -208,7 +208,7 @@ class RoundResult:
                 raise ALEDException(f"{pl} returned a accusation list of length {len(acc)}, excepted 1 or 2")
 
     def to_embed(self):
-        em = discord.Embed(title="Détail des scores")
+        em = nextcord.Embed(title="Détail des scores")
         for pl_id, dic in self.player_report.items():
             em.add_field(name=pl_id.name, value=self.dic_to_codeblock(dic))
         return em
@@ -221,7 +221,7 @@ class RoundResult:
         return txt + '```'
 
     async def send_accusation_embed(self, channel):
-        em = discord.Embed(title="Résultat de la manche")
+        em = nextcord.Embed(title="Résultat de la manche")
         spy = [(p, a) for p, a in self.accusations.items() if len(a) == 1]
         counter = [(p, a) for p, a in self.accusations.items() if len(a) == 2]
         em.add_field(name="Espion", value='\n'.join(f"{p.mention} => {a[0].mention}" for p, a in spy))

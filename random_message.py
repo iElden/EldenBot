@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import random
 
 BOOP = ["bip boop boop ?", "bip boop !", "boop bip ?", "boop boop !"]

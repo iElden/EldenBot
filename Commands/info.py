@@ -1,7 +1,7 @@
 from datetime import datetime
 from util.function import get_member
 from util.exception import NotFound
-import discord
+import nextcord
 
 def format_time(x):
     return x.strftime("**%a %d %B %Y - %H:%M:%S** (UTC)")
@@ -12,7 +12,7 @@ class CmdInfos:
             member = get_member(guild, ' '.join(args))
             if not member:
                 raise NotFound("Membre non toruvé :(")
-        em = discord.Embed(title=member.display_name, colour=member.colour)
+        em = nextcord.Embed(title=member.display_name, colour=member.colour)
         em.add_field(name="Nom", value=member.name)
         em.add_field(name="Discriminator", value="#" + member.discriminator)
         em.add_field(name="ID", value=str(member.id))
