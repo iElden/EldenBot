@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import datetime
 from util.decorator import can_manage_message, only_owner
 from util.exception import InvalidArgs
@@ -9,7 +9,7 @@ MOD_MOVE = ("Votre message a été déplacé de {} à {} par {} pour la raison "
             + "suivante :\n{}")
 
 async def move_message(msg, target, reason):
-    em = discord.Embed(description=msg.content, timestamp=msg.created_at)
+    em = nextcord.Embed(description=msg.content, timestamp=msg.created_at)
     em.set_footer(text="message déplacé")
     em.set_author(icon_url=msg.author.avatar_url, name=msg.author.name)
     if msg.attachments:
@@ -21,7 +21,7 @@ async def move_message(msg, target, reason):
 
 class CmdModeration:
     @only_owner
-    async def cmd_jailaflemmedetoutbanalamain(self, *args, message : discord.Message, channel, member, **_):
+    async def cmd_jailaflemmedetoutbanalamain(self, *args, message : nextcord.Message, channel, member, **_):
         for member in message.mentions:
             try:
                 if len(member.roles) != 1:

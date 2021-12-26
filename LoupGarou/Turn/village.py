@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import asyncio
 
 def create_vote_msg(votes, max_len):
@@ -13,10 +13,10 @@ def create_vote_msg(votes, max_len):
 
 async def village(game):
     players = game.alive # [Player, ...]
-    votes = {i.member: None for i in players} # {discord.Member : discord.Member, ...}
-    _voted = [] # [discord.Member, ...]
+    votes = {i.member: None for i in players} # {nextcord.Member : nextcord.Member, ...}
+    _voted = [] # [nextcord.Member, ...]
     _max_vote = 0
-    target = [] # in while : [discord.Member, ...] / after : discord.Member
+    target = [] # in while : [nextcord.Member, ...] / after : nextcord.Member
     max_len = max([len(i.name) for i in players])
 
     if len(players) == 2:

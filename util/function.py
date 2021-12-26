@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import re
 import json
 from typing import List
@@ -15,9 +15,9 @@ def msg(message, error=False):
     else :     return("```diff\n{}```".format(message))
     
 def get_channel_named(server, name):
-    return(discord.utils.get(server.channels, name=name))
+    return(nextcord.utils.get(server.channels, name=name))
 
-def get_member_in_channel(voice : discord.VoiceState):
+def get_member_in_channel(voice : nextcord.VoiceState):
     if not voice or not voice.channel:
         raise NotFound("Impossible de récupérer les joueurs : Vous n'êtes pas connecté à un channel vocal")
     return voice.channel.members
@@ -57,7 +57,7 @@ def write_json_file(file, obj):
     except:
         raise ALEDException(f"Impossible d'écrire le fichier {file} !")
 
-async def get_webhook(channel: discord.TextChannel) -> discord.Webhook:
+async def get_webhook(channel: nextcord.TextChannel) -> nextcord.Webhook:
     webhooks = await channel.webhooks()
     for webhook in webhooks:
         if webhook.name == WEBHOOK_NAME:

@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import asyncio
 import random
 from LoupGarou.decorator import are_alive
@@ -33,7 +33,7 @@ def format_chat(chat):
         return result
 
 def make_embed(votes, chatlog):
-    embed = discord.Embed(title="Tour des loups-garous")
+    embed = nextcord.Embed(title="Tour des loups-garous")
     embed.add_field(name="Votes", value=create_vote_msg(votes), inline=False)
     embed.add_field(name="Chat", value=format_chat(chatlog), inline=False)
     return embed
@@ -41,7 +41,7 @@ def make_embed(votes, chatlog):
 async def edit_message(msg, em):
     try:
         await msg.edit(embed=em)
-    except discord.HTTPException:
+    except nextcord.HTTPException:
         pass
 
 async def edit_messages(msg_list, votes, chatlog):
@@ -57,10 +57,10 @@ async def send_messages(game, member_list, content=None, embed=None):
 @are_alive("loup-garou")
 async def werewolf(game, lgs): # Game, [Player, ....]
     game.target = None
-    lgs_member = [lg.member for lg in lgs] # [discord.Member, ...]
-    votes = {i: None for i in lgs_member} # {discord.Member : discord.Member, ...}
-    msg_list = [] # [discord.Message, ...]
-    chatlog = [] # [discord.Message, ...]
+    lgs_member = [lg.member for lg in lgs] # [nextcord.Member, ...]
+    votes = {i: None for i in lgs_member} # {nextcord.Member : nextcord.Member, ...}
+    msg_list = [] # [nextcord.Message, ...]
+    chatlog = [] # [nextcord.Message, ...]
     embed = make_embed(votes, chatlog)
     for lg in lgs:
         msg_list.append(await lg.send(embed=embed))

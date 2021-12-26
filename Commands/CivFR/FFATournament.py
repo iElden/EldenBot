@@ -1,6 +1,6 @@
 from typing import List, Dict, Generator, Set
 import re
-import discord
+import nextcord
 import asyncio
 from datetime import datetime, timedelta
 import json
@@ -128,7 +128,7 @@ async def update_leaderboard(client):
 
     sorted_result = sorted(result.items(), key=lambda i: i[1], reverse=True)
     # txt = '\n'.join(f"{i+1} : <@{result[0]}> {result[1][0]} pts / {result[1][1]} ⭐" for i, result in enumerate(sorted_result[:15]))
-    em = discord.Embed(title="Classement tournoi FFA")
+    em = nextcord.Embed(title="Classement tournoi FFA")
     em.add_field(name="Joueurs",
                  value= '\n'.join(f"{i+1} : <@{result[0]}>" for i, result in enumerate(sorted_result[:25]))
     )
@@ -147,18 +147,18 @@ async def on_report(message):
     if result_len < 6:
         raise ParsingError(f"Le rapport de match doit contenir au moins 6 mentions. {result_len} mentions ont été parsé.")
     date = message.created_at - timedelta(hours=6)
-    em = discord.Embed(title="Match enregistré", description='\n'.join(f"{v+1} : <@{k}>" for k, v in result.items()))
+    em = nextcord.Embed(title="Match enregistré", description='\n'.join(f"{v+1} : <@{k}>" for k, v in result.items()))
     em.add_field(name="Status : En attente de validation", value="Un arbitre doit dindoner pour que votre partie soit comptée dans le score.")
     em.set_footer(text=f"Report by: {message.author}")
-    msg = await message.channel.send(embed=em)  # type: discord.Message
+    msg = await message.channel.send(embed=em)  # type: nextcord.Message
     db.add_match(Match(result, message.id, msg.id, False, date))
     await msg.add_reaction(TURKEY)
 
-async def on_dindon(payload : discord.RawReactionActionEvent, *, client : discord.Client):
+async def on_dindon(payload : nextcord.RawReactionActionEvent, *, client : nextcord.Client):
     if payload.channel_id != REPORT_CHANNEL and payload.emoji != TURKEY:
         return
     channel = client.get_channel(payload.channel_id)
-    civ_fr = client.get_guild(CIVFR_GUILD_ID)  # type: discord.Guild
+    civ_fr = client.get_guild(CIVFR_GUILD_ID)  # type: nextcord.Guild
     member = civ_fr.get_member(payload.user_id)
     if not member or (not is_arbitre(member) and payload.user_id != 384274248799223818):
         return
@@ -166,7 +166,7 @@ async def on_dindon(payload : discord.RawReactionActionEvent, *, client : discor
     if match.is_valided:
         return
     msg = await channel.fetch_message(payload.message_id)
-    em = discord.Embed(title="Match validé", description='\n'.join(f"{v+1} : <@{k}>" for k, v in match.result_dict.items()))
+    em = nextcord.Embed(title="Match validé", description='\n'.join(f"{v+1} : <@{k}>" for k, v in match.result_dict.items()))
     em.add_field(name="Status : Validé !", value=f"Votre match a été validé par {member.mention}.")
     await msg.edit(embed=em)
     match.is_valided = True
@@ -215,7 +215,7 @@ async def add_match(*args, client, member, force, channel, **_):
         raise InvalidArgs("Match ID must be a int")
     if not is_arbitre(member) and not force:
         raise Forbidden("Only a Arbitre can use this command")
-    report_channel = client.get_channel(714564031737757876)  # type: discord.TextChannel
+    report_channel = client.get_channel(714564031737757876)  # type: nextcord.TextChannel
     msg = await report_channel.fetch_message(int(args[0]))
     date = msg.created_at - timedelta(hours=6)
     result = Match.parse_report(msg.content)

@@ -1,5 +1,5 @@
 import random
-import discord
+import nextcord
 import re
 from typing import List, Tuple
 from util.exception import InvalidArgs
@@ -86,14 +86,14 @@ class CmdRoll:
             args = "1d100"
         expr = "".join(args)
         r = roll(expr)
-        await message.channel.send(embed=discord.Embed(
+        await message.channel.send(embed=nextcord.Embed(
             title="Lancé de dés",
             description=f"{member.mention} {r.intro_sentence}\n\n{r.format_results}\n\nTotal : **{r.total}**",
             colour=member.colour
         ).set_footer(text=message.content).set_author(name=member.name, icon_url=member.avatar_url))
         try:
             await message.delete()
-        except discord.HTTPException:
+        except nextcord.HTTPException:
             pass
 
     async def cmd_bloodlustroll(self, *args, message, **_):
@@ -105,10 +105,10 @@ class CmdRoll:
             d = int(arg)
             r = 0
         l = roll_dice(d ,6)
-        await message.channel.send(embed=discord.Embed(title="Lancé de dés (Bloodlust)",description="{} a lancé {} dés avec {} risques, il a obtenu :\n\n**{}**\n\nTotal : **{}** (Qualités : **{}**)".format(message.author.name,str(d),str(r),", ".join([str(i) for i in l]),sum(l),str(len([i for i in l if i%2 == 0])+r)),colour=message.author.color).set_author(name=message.author.name,icon_url=message.author.avatar_url))
+        await message.channel.send(embed=nextcord.Embed(title="Lancé de dés (Bloodlust)",description="{} a lancé {} dés avec {} risques, il a obtenu :\n\n**{}**\n\nTotal : **{}** (Qualités : **{}**)".format(message.author.name,str(d),str(r),", ".join([str(i) for i in l]),sum(l),str(len([i for i in l if i%2 == 0])+r)),colour=message.author.color).set_author(name=message.author.name,icon_url=message.author.avatar_url))
         try:
             await message.delete()
-        except discord.HTTPException:
+        except nextcord.HTTPException:
             pass
 
     async def cmd_r(self, *args, **kwargs): await self.cmd_roll(*args, **kwargs)

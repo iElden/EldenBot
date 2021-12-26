@@ -1,4 +1,4 @@
-import discord
+import nextcord
 from itertools import product
 from typing import List, Union, Optional
 from ..util.exception import NotFound, ALEDException
@@ -11,7 +11,7 @@ class Game:
     def __init__(self, *, players, deck="Classic"):
         """
         Args:
-            players (List[discord.User]):
+            players (List[nextcord.User]):
             deck Union[str, List[str]]:
         """
         self.players = [Player(member, self) for member in players]
@@ -44,7 +44,7 @@ class Player:
     def __init__(self, member, game):
         """
         Args:
-            member (discord.User):
+            member (nextcord.User):
             game (Game):
         """
         self.member = member

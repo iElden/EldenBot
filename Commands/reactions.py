@@ -1,4 +1,4 @@
-import discord
+import nextcord
 from util.exception import InvalidArgs, NotFound
 
 class CmdReaction:
@@ -10,7 +10,7 @@ class CmdReaction:
         msg = await channel.fetch_message(int(args[0]))
         if not msg:
             raise NotFound(f"Message with id \"{args[0]}\" not found")
-        emoji = discord.utils.get(client.emojis, name=args[1])
+        emoji = nextcord.utils.get(client.emojis, name=args[1])
         if not emoji:
             raise NotFound(f"Emoji named \"{args[1]}\" not found")
         try:

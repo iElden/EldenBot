@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import random
 import asyncio
 from util.function import get_webhook
@@ -12,7 +12,7 @@ MAGIC_CARPET_AVATAR_URL = "https://cdn.discordapp.com/attachments/43122559218928
 
 class CmdUseless:
     async def cmd_getroleid(self, *args, channel, guild, **_):
-        role = discord.utils.get(guild.roles, name=' '.join(args))
+        role = nextcord.utils.get(guild.roles, name=' '.join(args))
         if not role:
             await channel.send("Role non trouvé")
         await channel.send(str(role.id))
@@ -24,7 +24,7 @@ class CmdUseless:
                 vanished.append(user.name)
             else:
                 survivors.append(user.name)
-        em = discord.Embed(title="Thanos snap simulator", colour=0xF7AD43)
+        em = nextcord.Embed(title="Thanos snap simulator", colour=0xF7AD43)
         em.add_field(name="the vanished", value='\n'.join(vanished))
         em.add_field(name="the survivors", value='\n'.join(survivors))
         await channel.send(embed=em)

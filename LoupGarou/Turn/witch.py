@@ -1,9 +1,9 @@
 from LoupGarou.decorator import is_alive
-import discord
+import nextcord
 
 @is_alive("sorcière")
 async def witch(game, player):
-    em = discord.Embed(title="Sorcière")
+    em = nextcord.Embed(title="Sorcière")
     em.add_field(name='Potion disponible', value="```diff\n{} Potion de soin: {}\n{} Potion de poison: {}".format(
         '+' if player.role.heal else '-',
         player.role.heal,

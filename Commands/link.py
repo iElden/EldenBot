@@ -1,5 +1,5 @@
 import json
-import discord
+import nextcord
 import logging
 from random_message import *
 from util.decorator import only_owner

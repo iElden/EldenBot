@@ -1,5 +1,5 @@
 import requests
-import discord
+import nextcord
 from PIL import Image
 
 def get_formula(formula):
@@ -22,4 +22,4 @@ class CmdLatex:
     async def cmd_latex(self, *args, channel, **_):
         args = "".join(args)
         get_formula(args)
-        await channel.send(".", file=discord.File("formula.png", filename="formula.png"))
+        await channel.send(".", file=nextcord.File("formula.png", filename="formula.png"))

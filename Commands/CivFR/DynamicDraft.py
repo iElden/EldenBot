@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import asyncio
 from enum import IntEnum
 from typing import List, Tuple
@@ -36,7 +36,7 @@ class DynamicDraft:
         self.timer = self.base_timer * 2
         self.ban_phase = [1, 2] * self.ban_per_team
         self.pick_phase = [1, 2] + [2, 1, 1, 2] * ((self.pick_per_team - 1) // 2) + ([] if self.pick_per_team % 2 else [2, 1])
-        self.caps = (cap1, cap2)  # type: Tuple[discord.Member]
+        self.caps = (cap1, cap2)  # type: Tuple[nextcord.Member]
 
         self.phase = self.ActionType.BAN  # type: DynamicDraft.ActionType
         self.phase_nb = -1  # type: int
@@ -78,7 +78,7 @@ class DynamicDraft:
                 txt += '\n' + i
         descs.append(txt)
 
-        em = discord.Embed(title="Dynamic Draft", description=descs[0])
+        em = nextcord.Embed(title="Dynamic Draft", description=descs[0])
         if len(descs) > 1:
             em.add_field(name="\u200b", value=descs[1], inline=False)
         if self.is_ended:
@@ -118,7 +118,7 @@ class DynamicDraft:
     def get_team_needed_for_action(self) -> int:
         return self.get_current_phase()[self.phase_nb]
 
-    def get_member_needed_for_action(self) -> discord.Member:
+    def get_member_needed_for_action(self) -> nextcord.Member:
         return self.caps[self.get_team_needed_for_action() - 1]
 
     def update(self, n) -> bool:  # return true if finished

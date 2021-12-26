@@ -1,0 +1,10 @@
+aiohttp
+Flask
+nextcord
+oauth2client
+gspread
+pantheon
+Pillow
+requests
+trueskill
+youtube_dl

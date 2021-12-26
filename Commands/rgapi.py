@@ -4,7 +4,7 @@ from util.exception import InvalidArgs, NotFound
 from constant import CHAMP_ID_TO_EMOJI, RUNE_ID_TO_EMOJI, MASTERIES_TO_EMOJI, CHAMP_NONE_EMOJI, INVISIBLE_EMOJI
 from .lol_score import LEAGUE_SCORE, DIV_SCORE
 import asyncio
-import discord
+import nextcord
 import time
 
 from .verif import load_verif
@@ -124,7 +124,7 @@ class CmdRgapi:
         txt = "```{}```".format(
             "\n".join(["{:>3}: {}".format(r[i][1], response[i]['name']) for i in range(len(r))]))
         if len(txt) >= 2000 : txt = txt[:1996] + "```"
-        em = discord.Embed(title="Invocateurs rencontrés les 365 derniers jours",
+        em = nextcord.Embed(title="Invocateurs rencontrés les 365 derniers jours",
                            description=txt)
         em.set_author(name=summonerName,
                       icon_url="http://ddragon.canisback.com/latest/img/profileicon/"+str(iconId)+".png")
@@ -182,7 +182,7 @@ class CmdRgapi:
         if bonus : recap += "```"
         try : colour = message.guild.get_member_named(summonerName).colour
         except : colour = 0xC0C0C0
-        em = discord.Embed(title=title, description=recap, colour = colour)
+        em = nextcord.Embed(title=title, description=recap, colour = colour)
         em.set_footer(text="INFO : " + str(len(seasonMatches)) + " matchs analysés")
         em.set_author(name=summonerName, icon_url="http://ddragon.canisback.com/latest/img/profileicon/"+str(iconId)+".png")
         await msg.edit(content=".",embed=em)
@@ -199,7 +199,7 @@ class CmdRgapi:
         try : colour = message.guild.get_member_named(summonerName).colour
         except : colour = 0xC0C0C0
         icon = "http://ddragon.canisback.com/latest/img/profileicon/"+str(iconId)+".png"
-        msg = await message.channel.send(embed=discord.Embed(title="Afk Meter",colour=colour).set_author(name=summonerName, icon_url=icon))
+        msg = await message.channel.send(embed=nextcord.Embed(title="Afk Meter",colour=colour).set_author(name=summonerName, icon_url=icon))
         matches, timelines = await getSeasonMatches(accountId, timeline=True)
         for i in range(len(matches)):
             for participant in matches[i]["participantIdentities"]:
@@ -222,7 +222,7 @@ class CmdRgapi:
             txt += "\ngame n°" + str(x) +" : **" + str(y) +"** minute(s)"
             nb += 1
             mt += y
-        em = discord.Embed(title="Afk Meter :",description="Sur les " +str(len(matches)) +" dernières parties\n" +summonerName +" a AFK **" +str(nb) +"** games pour un total de **" +str(mt) +"** minutes\n\n" +txt,colour=colour)
+        em = nextcord.Embed(title="Afk Meter :",description="Sur les " +str(len(matches)) +" dernières parties\n" +summonerName +" a AFK **" +str(nb) +"** games pour un total de **" +str(mt) +"** minutes\n\n" +txt,colour=colour)
         await msg.edit(embed=em.set_author(name=summonerName, icon_url=icon))
 
 
@@ -247,11 +247,11 @@ class CmdRgapi:
             spec_data = await panth.getCurrentGame(summ_info["id"])
         except :
             return await channel.send("L'invocateur n'est pas en jeu actuellement")
-        msg = await channel.send(embed=discord.Embed(title="Récupération des informations ..."))
+        msg = await channel.send(embed=nextcord.Embed(title="Récupération des informations ..."))
         team1 = await asyncio.gather(*(format_player_info(participant) for participant in spec_data["participants"] if participant["teamId"] == 100))
         team2 = await asyncio.gather(*(format_player_info(participant) for participant in spec_data["participants"] if participant["teamId"] == 200))
 
-        em = discord.Embed(title=f"Game de {summ_info['name']}")
+        em = nextcord.Embed(title=f"Game de {summ_info['name']}")
         em.add_field(name="Équipe bleu", value=f"Champions bannis :\n{' '.join([(CHAMP_ID_TO_EMOJI[str(i['championId'])] if str(i['championId']) != '-1' else CHAMP_NONE_EMOJI) for i in spec_data['bannedChampions'] if i['teamId'] == 100])}", inline=False)
         for i, name in enumerate(["Invocateurs", "Runes et Classement", "Masteries"]):
             em.add_field(name=name, value='\n'.join([player[i] for player in team1]), inline=True)

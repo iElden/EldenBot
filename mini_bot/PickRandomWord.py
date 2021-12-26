@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 import sys
 import os
-import discord
+import nextcord
 import asyncio
 import random
 import logging
 import json
 
 logging.basicConfig(level=logging.INFO)
-client = discord.Client()
+client = nextcord.Client()
 #wb = gspread.authorize("token_google").open_by_key('1v-MzfsOmmCQNwWFHl86UVrf3lIm5QPitRiJeA4ISIPw')
 #wb = wb.get_worksheet(0)
 

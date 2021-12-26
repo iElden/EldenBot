@@ -1,11 +1,11 @@
 from .Champions import Champion
 
-import discord
+import nextcord
 from typing import List, Optional
 from util.exception import ALEDException
 
 class Team:
-    def __init__(self, champions : List[Champion], owner : Optional[discord.Member]):
+    def __init__(self, champions : List[Champion], owner : Optional[nextcord.Member]):
         self.champions = champions
         self.owner = owner
 
@@ -17,10 +17,10 @@ class Team:
     def to_json(self):
         return [i.to_json() for i in self.champions]
 
-    def to_embed(self) -> discord.Embed:
+    def to_embed(self) -> nextcord.Embed:
         if not self.champions:
-            return discord.Embed(title="Champions", description="Vous n'avez aucun champion")
-        em = discord.Embed(title="Champions", colour=self.owner.colour)
+            return nextcord.Embed(title="Champions", description="Vous n'avez aucun champion")
+        em = nextcord.Embed(title="Champions", colour=self.owner.colour)
         for level in range(self.champions[0].level, 0, -1):
             em.add_field(name=f"Niveau {level}",
                          value=''.join([i.to_emoji() for i in self.champions if i.level == level])[:1000],

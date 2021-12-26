@@ -3,7 +3,7 @@ from constant.rgapi import CHAMP_ID_TO_EMOJI, CHAMP_NAME_TO_ID, TFT_PRICES, INVI
 from .const import CHAMPIONS_PRICES
 from .Champions import Champion
 from util.exception import Forbidden
-import discord
+import nextcord
 
 class DraftMsg:
 
@@ -25,7 +25,7 @@ class DraftMsg:
         if len(cls._all_messages) >= 3:
             await DraftMsg.del_first_message()
         self = cls(champions_list)
-        self.msg = await channel.send(embed=discord.Embed(title="Chargement"))
+        self.msg = await channel.send(embed=nextcord.Embed(title="Chargement"))
         await self.update()
         for i in range(len(champions_list)):
             await self.msg.add_reaction(str(i) + chr(0xFE0F) + chr(0x20E3))
@@ -45,7 +45,7 @@ class DraftMsg:
         champ_emoji = [CHAMP_ID_TO_EMOJI[CHAMP_NAME_TO_ID[champ]] for champ in self.champions_list]
         number_list = [((str(i) + chr(0xFE0F) + chr(0x20E3)) if i not in self.picked else INVISIBLE_EMOJI)
                        for i in range(len(self.champions_list))]
-        em = discord.Embed(title="Shared Draft", description="Cliquez sur les réactions pour prendre votre champion")
+        em = nextcord.Embed(title="Shared Draft", description="Cliquez sur les réactions pour prendre votre champion")
         em.add_field(name="Logs",
                      value='\n'.join(self.logs),
                      inline=False)

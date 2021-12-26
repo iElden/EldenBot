@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import logging
 from datetime import datetime, timedelta
 from typing import Dict
@@ -10,14 +10,14 @@ CHANNELS : Dict[int, timedelta] = {
     571736666868285455: timedelta(days=30)
 }
 
-def message_is_not_pinned(message: discord.Message):
+def message_is_not_pinned(message: nextcord.Message):
     return not message.pinned
 
-async def clear_channels(channel : discord.TextChannel, delta : timedelta):
+async def clear_channels(channel : nextcord.TextChannel, delta : timedelta):
     await channel.purge(limit=None, before=datetime.now() - delta, check=message_is_not_pinned)
 
 
-async def routine(client : discord.Client):
+async def routine(client : nextcord.Client):
     logger.debug("Runing clear routine ...")
     for channel_id, delta in CHANNELS.items():
         await clear_channels(client.get_channel(channel_id), delta)

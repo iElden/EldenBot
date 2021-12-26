@@ -1,8 +1,8 @@
 from LoupGarou.decorator import is_alive
-import discord
+import nextcord
 
 async def update_msg(msg=None, player=None, target=None):
-        em = discord.Embed(title="Joueur en vie",
+        em = nextcord.Embed(title="Joueur en vie",
                            description="{}\n```Cible 1> {}\nCible 2> {}```".format(
                                 '\n'.join(['- ' + i.name for i in game.alive]),
                                 *target

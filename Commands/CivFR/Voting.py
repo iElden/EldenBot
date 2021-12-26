@@ -1,4 +1,4 @@
-import discord
+import nextcord
 import asyncio
 from typing import List, Dict, Tuple, Optional, Iterable
 from enum import Enum
@@ -42,7 +42,7 @@ class Voting:
         self.banned_leaders = []
         self.draft_mode = None
 
-    async def run(self, channel : discord.TextChannel, client : discord.Client):
+    async def run(self, channel : nextcord.TextChannel, client : nextcord.Client):
         await channel.send("Liste des joueurs: " + ' '.join(i.mention for i in self.members))
         sended = await asyncio.gather(*[self.send_line(k, v, channel) for k, v in VOTED_SETTINGS.items()])
         ban_msg = await self.send_ban_msg(channel)
@@ -51,18 +51,18 @@ class Voting:
         msg_ids = [*votes_msg_ids, ban_msg.id, confirm_msg.id]
         msg_to_vote : Dict[int, Tuple[str, List[Tuple[EMOJI, str]]]] = {sended[i].id: (name, v) for i, (name, (v)) in enumerate(VOTED_SETTINGS.items())}
 
-        def check(reac_ : discord.Reaction, user_ : discord.User):
+        def check(reac_ : nextcord.Reaction, user_ : nextcord.User):
             return reac_.message.id in msg_ids
 
         while True:
             try:
-                reaction, user = await client.wait_for('reaction_add', check=check, timeout=600)  # type: (discord.Reaction, discord.User)
+                reaction, user = await client.wait_for('reaction_add', check=check, timeout=600)  # type: (nextcord.Reaction, nextcord.User)
             except asyncio.TimeoutError:
                 raise Timeout(f"Vote id {confirm_msg.id} timed out, task killed")
             if user.id not in self.members_id and user.id != client.user.id:
                 try:
                     await reaction.remove(user)
-                except discord.HTTPException:
+                except nextcord.HTTPException:
                     pass
                 continue
 
@@ -72,8 +72,8 @@ class Voting:
                 if not self.waiting_members:
                     break
             if reaction.message.id == ban_msg.id:
-                emoji : discord.Emoji = reaction.emoji
-                if not isinstance(emoji, discord.Emoji):
+                emoji : nextcord.Emoji = reaction.emoji
+                if not isinstance(emoji, nextcord.Emoji):
                     continue
                 leader = leaders.get_leader_by_emoji_id(reaction.emoji.id)
                 if not leader:
@@ -85,7 +85,7 @@ class Voting:
                 winner = self.get_winner_by_emoji_str(str(reaction.emoji), msg_to_vote[reaction.message.id])
                 if not winner:
                     continue
-                msg : discord.Message = reaction.message
+                msg : nextcord.Message = reaction.message
                 await asyncio.gather(msg.clear_reactions(), msg.edit(content="__**{0[0]}**__: {0[1]} {0[2]}".format(winner)))
                 if winner[0] == DRAFT_MODE_TITLE:
                     self.draft_mode = DraftMode(winner[2])
@@ -110,7 +110,7 @@ class Voting:
 
 
     @staticmethod
-    async def send_ban_msg(channel) -> discord.Message:
+    async def send_ban_msg(channel) -> nextcord.Message:
         msg = await channel.send("__**Bans**__: Sélectionnez les civs à bannir depuis la liste des emojis.")
         await msg.add_reaction("🚫")
         return msg
@@ -119,7 +119,7 @@ class Voting:
         await msg.edit(content="__**Bans**__: Sélectionnez les civs à bannir depuis la liste des emojis.\n" +
                        '\n'.join(f"{client.get_emoji(i.emoji_id)} {i.civ}" for i in self.banned_leaders))
 
-    async def send_confirm_msg(self, channel) -> discord.Message:
+    async def send_confirm_msg(self, channel) -> nextcord.Message:
         msg = await channel.send("En attente de : " + ', '.join(f"<@{i}>" for i in self.waiting_members))
         await msg.add_reaction(TURKEY)
         return msg
@@ -127,7 +127,7 @@ class Voting:
     async def edit_confirm_msg(self, msg):
         await msg.edit(content="En attente de : " + ', '.join(f"<@{i}>" for i in self.waiting_members))
 
-    async def is_vote_winner(self, reaction : discord.Reaction) -> bool:
+    async def is_vote_winner(self, reaction : nextcord.Reaction) -> bool:
         users = await reaction.users().flatten()
         ls = list(filter(lambda user: user.id in self.members_id, users))
         if len(ls) >= self.majority:
@@ -149,7 +149,7 @@ class Voting:
 
 
 class CmdCivFRVoting:
-    async def cmd_vote(self, *args, member, message : discord.Message, channel, client, **_):
+    async def cmd_vote(self, *args, member, message : nextcord.Message, channel, client, **_):
         if not args:
             members = get_member_in_channel(member.voice)
         else:

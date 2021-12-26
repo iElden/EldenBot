@@ -1,10 +1,10 @@
-import discord
+import nextcord
 
 async def option_management(game, player_list):
     def check(msg):
         return msg.author == game.mj
     while True:
-        em = discord.Embed(title="Option", description="```diff\noption:\n{}```".format(
+        em = nextcord.Embed(title="Option", description="```diff\noption:\n{}```".format(
             "\n".join("{} {} : {}".format('+' if j else '-', i, repr(j))
             for i, j in game.option.items())))
         em.set_footer(text="\"OK\" pour valider, \"{option}={valeur}\" pour modifier")

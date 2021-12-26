@@ -1,5 +1,5 @@
 import random
-from discord import AllowedMentions
+from nextcord import AllowedMentions
 
 from util.exception import InvalidArgs, Forbidden
 from .constant import CIVFR_GUILD_ID

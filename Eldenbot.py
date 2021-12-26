@@ -1,5 +1,5 @@
-#!/usr/bin/python3
-import discord
+#!/usr/local/bin/python3.10
+import nextcord
 import asyncio
 import logging
 import json
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     from Commands import Command
     command = Command()
 
-client = discord.Client(activity=discord.Game("type /help for commands"), allowed_mentions=discord.AllowedMentions(everyone=False), intents=discord.Intents.all())
+client = nextcord.Client(activity=nextcord.Game("type /help for commands"), allowed_mentions=nextcord.AllowedMentions(everyone=False), intents=nextcord.Intents.all())
 logger = logging.getLogger("Main")
 
 NO_COMMANDS_SERVER = [] #[197418659067592708]
@@ -36,7 +36,7 @@ NO_COMMANDS_SERVER = [] #[197418659067592708]
 async def bot_routine():
     await client.wait_until_ready()
     if len(argv) > 1 and argv[1] == '-d':
-        await client.change_presence(status=discord.Status.dnd, activity=discord.Game("In debug mode..."))
+        await client.change_presence(status=nextcord.Status.dnd, activity=nextcord.Game("In debug mode..."))
         logger.warning("Program has been lunched with -d argument, exiting bot_routine ...")
         return
     while True:
@@ -77,11 +77,11 @@ async def on_raw_reaction_add(payload):
         await client.get_user(payload.user_id).send(error[15:])
 
 @client.event
-async def on_raw_message_edit(payload : discord.RawMessageUpdateEvent):
+async def on_raw_message_edit(payload : nextcord.RawMessageUpdateEvent):
     await civfrlevel_on_edit(payload, client=client)
 
 @client.event
-async def on_raw_message_delete(payload : discord.RawMessageDeleteEvent):
+async def on_raw_message_delete(payload : nextcord.RawMessageDeleteEvent):
     await civfrlevel_on_delete(payload, client=client)
 
 @client.event
@@ -110,7 +110,7 @@ async def on_message(m):
         except BotError as e:
             await m.channel.send(f"{type(e).__name__}: {e}")
         except Exception:
-            em = discord.Embed(title="Oh no !  😱",
+            em = nextcord.Embed(title="Oh no !  😱",
                                description="Une erreur s'est produite lors de l'éxécution de la commande\n" + msg("- [FATAL ERROR]\n" + traceback.format_exc()),
                                colour=0xFF0000).set_footer(text="command : " + m.content,icon_url=m.author.avatar_url)
             await m.channel.send(embed=em)
@@ -126,7 +126,7 @@ async def on_message(m):
     except BotError as e:
         await m.channel.send(f"{type(e).__name__}: {e}")
     except Exception:
-        em = discord.Embed(title="Oh no !  😱",
+        em = nextcord.Embed(title="Oh no !  😱",
                            description="Une erreur s'est produite lors de l'éxécution de la commande\n" + msg("- [FATAL ERROR]\n" + traceback.format_exc()),
                            colour=0xFF0000).set_footer(text="command : " + m.content,icon_url=m.author.avatar_url)
         await m.channel.send(embed=em)

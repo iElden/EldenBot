@@ -1,5 +1,5 @@
 import json
-import discord
+import nextcord
 import logging
 from pantheon import pantheon
 from util.decorator import only_owner
@@ -55,7 +55,7 @@ class CmdVerif:
         if not args:
             if str(member.id) in verified.keys():
                 data = await panth.getSummoner(verified[str(member.id)])
-                em = discord.Embed(title="Vérification",
+                em = nextcord.Embed(title="Vérification",
                                    description=VERIFIED.format(**data)
                 )
                 em.set_author(name=data['name'], icon_url=ICON_URL.format(data['profileIconId']))
