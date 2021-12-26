@@ -73,7 +73,7 @@ async def send_to_linked(client, message):
         txt = message.content
         try:
             if message.attachments:
-                txt += "\n\n" + message.attachments.url
+                txt += "\n\n" + message.attachments[0].url
         except Exception as e:
             logger.warning(f"{e.__class__.__name__}: {e}")
         for channel in linked[str(message.channel.id)]:
