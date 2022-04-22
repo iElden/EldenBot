@@ -122,6 +122,15 @@ class Database:
         validated BOOLEAN NOT NULL DEFAULT 0,
         json TEXT)
         """)
+        self.conn.execute("""
+        CREATE TABLE IF NOT EXISTS RankedStats1
+        (id INT PRIMARY KEY NOT NULL,
+        mu INT NOT NULL DEFAULT 0,
+        sigma INT NOT NULL DEFAULT 0,
+        games INT NOT NULL DEFAULT 0,
+        wins INT NOT NULL DEFAULT 0,
+        first INT NOT NULL DEFAULT 0)
+        """)
         self.conn.commit()
 
     def get_stat_for(self, discord_id) -> PlayerStat:

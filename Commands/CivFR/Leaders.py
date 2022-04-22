@@ -1,49 +1,8 @@
 import csv
 import re
-from typing import List
+from typing import List, Optional, Iterable
 
 NON_WORD = re.compile(r"[^\wÀ-ú]+")
-
-class Leaders:
-    def __init__(self, leaders_):
-        self.leaders = leaders_
-
-    def __getitem__(self, item):
-        return self.leaders[item]
-
-    def __iter__(self):
-        for i in self.leaders:
-            yield i
-
-    def _get_leader_named(self, name):
-        result = [leader for leader in self if leader == name]
-        if len(result) > 1:
-            return None
-        if result:
-            return result[0]
-        result = [leader for leader in self if leader.is_in(name)]
-        if len(result) == 1:
-            return result[0]
-        return None
-
-    def get_leader_named(self, name):
-        if name is None:
-            return None
-        name = name.lower()
-        leader = self._get_leader_named(name)
-        if leader:
-            return leader
-        for i in NON_WORD.split(name):
-            leader = self._get_leader_named(i)
-            if leader:
-                return leader
-        return None
-
-    def get_leader_by_emoji_id(self, emoji_id : int):
-        for leader in self:
-            if leader.emoji_id == emoji_id:
-                return leader
-        return None
 
 class Leader:
     def __init__(self, emoji_id, uuname, name, civ, cpl, *alias):
@@ -79,6 +38,47 @@ class Leader:
         if server == "CPL":
             return self.cpl
         return self.civ
+
+class Leaders:
+    def __init__(self, leaders_):
+        self.leaders : List[Leader] = leaders_
+
+    def __getitem__(self, item) -> Leader:
+        return self.leaders[item]
+
+    def __iter__(self) -> Iterable[Leader]:
+        for i in self.leaders:
+            yield i
+
+    def _get_leader_named(self, name) -> Optional[Leader]:
+        result = [leader for leader in self if leader == name]
+        if len(result) > 1:
+            return None
+        if result:
+            return result[0]
+        result = [leader for leader in self if leader.is_in(name)]
+        if len(result) == 1:
+            return result[0]
+        return None
+
+    def get_leader_named(self, name) -> Optional[Leader]:
+        if name is None:
+            return None
+        name = name.lower()
+        leader = self._get_leader_named(name)
+        if leader:
+            return leader
+        for i in NON_WORD.split(name):
+            leader = self._get_leader_named(i)
+            if leader:
+                return leader
+        return None
+
+    def get_leader_by_emoji_id(self, emoji_id : int) -> Optional[Leader]:
+        for leader in self:
+            if leader.emoji_id == emoji_id:
+                return leader
+        return None
 
 def load_leaders():
     with open("public_data/leaders.csv", "r", encoding='utf-8') as fd:

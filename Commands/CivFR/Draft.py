@@ -117,6 +117,13 @@ class BlindDraft:
     def is_finished(self):
         return None not in self.picks.values()
 
+class EldenDraft:
+    def __init__(self):
+        ...
+
+    async def run(self, channel, client):
+        view = EldenDraftView(client)
+        await channel.send("Bannisez un truc", view=view)
 
 async def draw_draft(drafts, generator, channel):
     result = []
@@ -157,6 +164,11 @@ class CmdCivDraft:
     async def cmd_blinddraft(self, *args : str, channel, client, member, **_):
         bd = BlindDraft(get_member_in_channel(member.voice), *args)
         await bd.run(channel, client=client)
+
+    async def cmd_eldendraft(self, *args : str, channel, client, member, **_):
+        ed = EldenDraft()
+        print("hello")
+        await ed.run(channel, client=client)
 
     async def cmd_dbgblinddraft(self, *args : str, channel, client, member, **_):
         bd = BlindDraft([member, client.get_user(267018917589942273)], *args)

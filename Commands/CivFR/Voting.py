@@ -7,7 +7,7 @@ from constant.emoji import NB, LETTER
 from util.function import get_member_in_channel
 from util.exception import InvalidArgs, Timeout
 from .Leaders import leaders
-from .Draft import BlindDraft, get_draft, draw_draft
+from .Draft import BlindDraft, get_draft, draw_draft, EldenDraft
 from .constant import TURKEY
 
 DRAFT_MODE_TITLE = "Mode de draft"
@@ -16,6 +16,7 @@ class DraftMode(Enum):
     NO_TRADE = "Trade interdit"
     BLIND = "Aveugle"
     RANDOM = "All Random"
+    ELDEN = "Elden"
 
 EMOJI = str
 VOTED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
@@ -31,25 +32,38 @@ VOTED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
     "Catastrophe": [(NB[0], "0"), (NB[1], "1"), (NB[2], "2"), (NB[3], "3"), (NB[4], "4")],
     DRAFT_MODE_TITLE: [("✅", DraftMode.WITH_TRADE.value), ("🚫", DraftMode.NO_TRADE.value), ("🙈", DraftMode.BLIND.value), ("❓", DraftMode.RANDOM.value)]
 }
+RANKED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
+    "Map": [(LETTER.P, "Pangée"), (LETTER.C, "Contient & Iles"), (NB[7], "7 mers"), (LETTER.H, "Highland"), (LETTER.L, "Lacs"), (LETTER.A, "Archipelle"),
+            (LETTER.F, "Fractale"), ("🏝️", "Plateau d'ile"), ("🌋", "Primordial"), (LETTER.T, "Tilted Axis"), (LETTER.M, "Mer Intérieure"), ("🌍", "Terre"), ("❓", "Aléatoire")],
+    "Diplo": [("➕", "Diplo +"), ("🦅", "Always War")],
+    "Timer": [("⏩", "Compétitif"), ("🔥", "90s"), ("🦘", "Sephi n+30")],
+    "Age du monde": [("🗻", "Normal"), ("🌋", "Nouveau")],
+    "Ressources": [(LETTER.C, "Classique"), (LETTER.A, "Abondante")],
+    "Stratégiques": [(LETTER.C, "Classique"), (LETTER.A, "Abondante")],
+    "Ridges definition": [(LETTER.S, "Standard"), (LETTER.V, "Vanilla"), (LETTER.L, "Large opening")],
+    "Catastrophe": [(NB[0], "0"), (NB[1], "1"), (NB[2], "2"), (NB[3], "3"), (NB[4], "4")],
+    DRAFT_MODE_TITLE: [("✅", DraftMode.WITH_TRADE.value), ("🚫", DraftMode.NO_TRADE.value), ("🙈", DraftMode.BLIND.value), ("❓", DraftMode.RANDOM.value)]
+}
 
 class Voting:
-    def __init__(self, members):
+    def __init__(self, members, settings=VOTED_SETTINGS):
         self.members = members
         self.members_id = [i.id for i in members]
         self.waiting_members = self.members_id[:]
-        self.result = {i: None for i in VOTED_SETTINGS}
+        self.settings = settings
+        self.result = {i: None for i in self.settings}
         self.majority = len(self.members) // 2 + 1
         self.banned_leaders = []
         self.draft_mode = None
 
     async def run(self, channel : nextcord.TextChannel, client : nextcord.Client):
         await channel.send("Liste des joueurs: " + ' '.join(i.mention for i in self.members))
-        sended = await asyncio.gather(*[self.send_line(k, v, channel) for k, v in VOTED_SETTINGS.items()])
+        sended = await asyncio.gather(*[self.send_line(k, v, channel) for k, v in self.settings.items()])
         ban_msg = await self.send_ban_msg(channel)
         confirm_msg = await self.send_confirm_msg(channel)
         votes_msg_ids = [i.id for i in sended]
         msg_ids = [*votes_msg_ids, ban_msg.id, confirm_msg.id]
-        msg_to_vote : Dict[int, Tuple[str, List[Tuple[EMOJI, str]]]] = {sended[i].id: (name, v) for i, (name, (v)) in enumerate(VOTED_SETTINGS.items())}
+        msg_to_vote : Dict[int, Tuple[str, List[Tuple[EMOJI, str]]]] = {sended[i].id: (name, v) for i, (name, (v)) in enumerate(self.settings.items())}
 
         def check(reac_ : nextcord.Reaction, user_ : nextcord.User):
             return reac_.message.id in msg_ids
@@ -105,8 +119,9 @@ class Voting:
             draft = BlindDraft(self.members, '.'.join(str(i) for i in self.banned_leaders))
             await draft.run(channel, client)
             return
-
-
+        if self.draft_mode == DraftMode.ELDEN:
+            elden_draft = EldenDraft()
+            await elden_draft.run(channel, client)
 
 
     @staticmethod

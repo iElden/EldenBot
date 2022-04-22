@@ -5,6 +5,8 @@ from .Draft import CmdCivDraft
 from .Voting import CmdCivFRVoting
 from .Level import CmdCivFRLevel
 from .TeamerTool import CmdTeamerTools
+from .Ranked.commands import CmdCivFRRanked
 
-class CmdCivFR(CmdCivGeneralFR, CmdCivFRDDraft, CmdCivDraft, CmdCivFRVoting, CmdCivFRLevel, CmdTeamerTools):
+class CmdCivFR(CmdCivGeneralFR, CmdCivFRDDraft, CmdCivDraft, CmdCivFRVoting, CmdCivFRLevel, CmdTeamerTools,
+               CmdCivFRRanked):
     pass

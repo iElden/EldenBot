@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 from random_message import *
 from Commands.link import send_to_linked
 from util.function import msg
-from util.exception import BotError
+from util.exception import BotError, ALEDException
 
 #Event listener
 from Commands.ChannelCleaner import routine as clear_routine
@@ -23,6 +23,7 @@ from Commands.CivFR.Level import on_message as civfrlevel_on_message
 from Commands.CivFR.Level import on_reaction as civfrlevel_on_reaction
 from Commands.CivFR.Level import on_edit as civfrlevel_on_edit
 from Commands.CivFR.Level import on_delete as civfrlevel_on_delete
+from Commands.CivFR.Ranked.commands import on_reaction as civfrranked_on_reaction
 
 if __name__ == '__main__':
     from Commands import Command
@@ -31,7 +32,7 @@ if __name__ == '__main__':
 client = nextcord.Client(activity=nextcord.Game("type /help for commands"), allowed_mentions=nextcord.AllowedMentions(everyone=False), intents=nextcord.Intents.all())
 logger = logging.getLogger("Main")
 
-NO_COMMANDS_SERVER = [] #[197418659067592708]
+NO_COMMANDS_SERVER = []
 
 async def bot_routine():
     await client.wait_until_ready()
@@ -69,6 +70,7 @@ async def on_raw_reaction_add(payload):
         return
     try:
         await civfrlevel_on_reaction(payload, client=client)
+        await civfrranked_on_reaction(payload, client=client)
         await (TFT_Functions.on_champion_pick(payload, client=client))
         await (dynamicembed_reaciton_change(payload))
         await (FFATournament.on_dindon(payload, client=client))
@@ -107,13 +109,12 @@ async def on_message(m):
             logger.info(f"{member} used command {m.content}")
             await function(*(i for i in args if i), message=m, member=member, force=force, cmd=cmd,
                            client=client, channel=m.channel, guild=m.guild, content=' '.join(args))
+        except ALEDException as e:
+            await m.channel.send(f"A Fatal error occured, please contact developer:```diff\n-[FATAL ERROR]\n{traceback.format_exc()}```")
         except BotError as e:
             await m.channel.send(f"{type(e).__name__}: {e}")
-        except Exception:
-            em = nextcord.Embed(title="Oh no !  😱",
-                               description="Une erreur s'est produite lors de l'éxécution de la commande\n" + msg("- [FATAL ERROR]\n" + traceback.format_exc()),
-                               colour=0xFF0000).set_footer(text="command : " + m.content,icon_url=m.author.avatar_url)
-            await m.channel.send(embed=em)
+        except Exception as e:
+            await m.channel.send(f"An unexcepted exception occured:```diff\n-[ERROR]\n{traceback.format_exc()}```")
     if m.content.startswith(f"<@{client.user.id}> play"):
         args = m.content.split(' ')[2:]
         await command.cmd_music(*args, message=m, member=m.author, force=False, cmd=None,
