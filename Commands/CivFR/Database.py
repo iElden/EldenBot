@@ -123,6 +123,12 @@ class Database:
         json TEXT)
         """)
         self.conn.execute("""
+        CREATE TABLE IF NOT EXISTS RankedMatchs
+        (id INT PRIMARY KEY,
+        validated BOOLEAN NOT NULL DEFAULT 0,
+        json TEXT)
+        """)
+        self.conn.execute("""
         CREATE TABLE IF NOT EXISTS RankedStats1
         (id INT PRIMARY KEY NOT NULL,
         mu INT NOT NULL DEFAULT 0,
@@ -132,6 +138,32 @@ class Database:
         first INT NOT NULL DEFAULT 0)
         """)
         self.conn.commit()
+
+    def get_s1_match(self) -> ...:
+        data = self.conn.execute("SELECT id, validated, json FROM RankedMatchs WHERE id = ?", (match_id,))
+        rt = data.fetchone()
+        if not rt:
+            return None
+        return ...
+
+    def add_s1_match(self, ...):
+        ...
+
+    def valid_s1_match(self, ...):
+        ranked_match.validated = True
+        self.conn.execute('UPDATE RankedMatchs SET validated = 1 WHERE id = ?',(match.id,))
+        self.conn.commit()
+
+    def unvalid_s1_match(self, ...):
+        ranked_match.validated = False
+        self.conn.execute('UPDATE RankedMatchs SET validated = 0 WHERE id = ?',(match.id,))
+        self.conn.commit()
+
+    def get_s1_player_stats(self, player_id) -> ...:
+        return ...
+
+    def update_s1_player_stats(self, player_stat):
+        ...
 
     def get_stat_for(self, discord_id) -> PlayerStat:
         data = self.conn.execute("""
