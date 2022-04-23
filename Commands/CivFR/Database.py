@@ -1,10 +1,11 @@
 import sqlite3 as sq3
 import json
 import nextcord
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List, Dict
 from enum import IntEnum
 
 from .ReportParser import Report, GameType
+from .constant import RANKED_CHANNEL, RANKED_ADMIN_ROLES, RANKED_ADMIN_USERS
 from util.exception import InvalidArgs
 
 GAMETYPE_TO_LOWERCASE = {
@@ -44,6 +45,12 @@ class PlayerStat:
                 f"Begin FFA win: {self.begin_ffa_win}\nBegin FFA play: {self.begin_ffa_play}\n"
                 f"Begin Teamer win: {self.begin_teamer_win}\nBegin Teamer play: {self.begin_teamer_play}\n\n"
                 f"Great Player: {self.great_player}\nIs bad coatch: {self.is_bad_coatch}\nLongtime Player: {self.longdate_member}")
+
+class ReportStatus:
+    def __init__(self,color, text, is_valid):
+        self.color = color
+        self.text = text
+        self.is_valid = is_valid
 
 class Match:
     def __init__(self, match_id, validated, report, check_msg_id=None):
@@ -92,6 +99,66 @@ class Match:
             return Color.YELLOW, "Les équipes ne contienne pas le même nombre de joueur"
         return Color.GREEN, "En attente de validation"
 
+class RankedStats1:
+    def __init__(self, discord_id, mu, sigma, games, wins, first):
+        self.id = discord_id
+        self.mu = mu
+        self.sigma = sigma
+        self.games = games
+        self.wins = wins
+        self.first = first
+
+class RankedMatch:
+    def __init__(self, players_pos : Dict[int, int], validated=False, match_id=None):
+        self.players : List[int] = [i for i in players_pos.keys()]
+        self.players_pos : Dict[int, int] = players_pos # {player_id: position}
+        self.validated : bool = validated
+        self.id : Optional[id] = match_id
+
+        self.report_status = self.get_report_status()
+
+    @classmethod
+    def new_game(cls, players : List[int]):
+        self = cls({k: None for k in players})
+        return self
+
+    async def update_embed(self, client : nextcord.Client):
+        channel = client.get_channel(RANKED_CHANNEL)
+        msg : nextcord.PartialMessage = channel.get_partial_message(self.id)
+        await msg.edit(embed=self.get_embed())
+
+    def get_embed(self) -> nextcord.Embed:
+        desc = ""
+        for i in range(1, len(self.players)+1):
+            desc += f"\n``{i:>2}:``" + ' ,'.join(f"<@{pl}>" for pl in self.players if self.players_pos[pl] == i)
+        pl_waiting = [k for k, v in self.players_pos.items() if v is None]
+        if pl_waiting:
+            desc += "\n\nEn attente de pointage: " + ', '.join(f"<@{pl}>" for pl in pl_waiting)
+        em = nextcord.Embed(title="Ranked Report", description=desc, colour=self.report_status.color)
+        em.add_field(name="Status", value=self.report_status.text)
+        return em
+
+    def get_report_status(self) -> ReportStatus:
+        if None in self.players_pos.values():
+            return ReportStatus(Color.RED,
+                                "Un ou plusieur joueurs n'ont pas validé leur position.\nLes joueurs qui n'ont pas validé leur position avant 24h seront placé dernier.",
+                                False)
+        if len(set(self.players_pos.values())) != len(self.players):
+            return ReportStatus(Color.YELLOW,
+                                "Les Ties ne sont pas autorisés sur CivFR.",
+                                False)
+        return ReportStatus(Color.GREEN,
+                            "En attente d'une validation par un Administrateur: " + ''.join(f"<@&{i}>" for i in RANKED_ADMIN_ROLES) + ''.join(f"<@{i}>" for i in RANKED_ADMIN_USERS),
+                            True)
+
+
+    def set_player_position(self, player_id : int, position : int):
+        self.players_pos[player_id] = position
+        self.report_status = self.get_report_status()
+
+    @classmethod
+    def from_db(cls, js, validated, match_id):
+        return cls({int(k):v for k, v in js.items()}, validated, match_id)
 
 class Database:
     def __init__(self):
@@ -139,24 +206,33 @@ class Database:
         """)
         self.conn.commit()
 
-    def get_s1_match(self) -> ...:
+    def get_s1_match(self, match_id) -> Optional[RankedMatch]:
         data = self.conn.execute("SELECT id, validated, json FROM RankedMatchs WHERE id = ?", (match_id,))
         rt = data.fetchone()
         if not rt:
             return None
-        return ...
+        return RankedMatch.from_db(json.loads(rt[2]), rt[1], rt[0])
 
-    def add_s1_match(self, ...):
-        ...
-
-    def valid_s1_match(self, ...):
-        ranked_match.validated = True
-        self.conn.execute('UPDATE RankedMatchs SET validated = 1 WHERE id = ?',(match.id,))
+    def add_s1_match(self, ranked_match : RankedMatch):
+        js = json.dumps(ranked_match.players_pos)
+        self.conn.execute("INSERT OR REPLACE INTO RankedMatchs (id, validated, json) VALUES (?, ?, ?)",
+                          (ranked_match.id, ranked_match.validated, js))
         self.conn.commit()
 
-    def unvalid_s1_match(self, ...):
+    def update_s1_match(self, ranked_match : RankedMatch):
+        js = json.dumps(ranked_match.players_pos)
+        self.conn.execute("UPDATE RankedMatchs SET validated=?, json=? WHERE id=?",
+                          (ranked_match.validated, js, ranked_match.id))
+        self.conn.commit()
+
+    def valid_s1_match(self, ranked_match):
+        ranked_match.validated = True
+        self.conn.execute('UPDATE RankedMatchs SET validated = 1 WHERE id = ?',(ranked_match.id,))
+        self.conn.commit()
+
+    def unvalid_s1_match(self, ranked_match):
         ranked_match.validated = False
-        self.conn.execute('UPDATE RankedMatchs SET validated = 0 WHERE id = ?',(match.id,))
+        self.conn.execute('UPDATE RankedMatchs SET validated = 0 WHERE id = ?',(ranked_match.id,))
         self.conn.commit()
 
     def get_s1_player_stats(self, player_id) -> ...:

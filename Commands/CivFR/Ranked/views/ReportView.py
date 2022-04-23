@@ -1,14 +1,14 @@
 import nextcord
 from nextcord import ui, ButtonStyle
-
-from Commands.CivFR.Ranked import commands as ranked_commands
+from Commands.CivFR.Database import db
 
 class ValidButton(ui.Button):
-    def __init__(self):
-        super().__init__(label="Valider", style=ButtonStyle.green, row=3)
+    def __init__(self, view):
+        super().__init__(label="Valider", style=ButtonStyle.green, row=3, disabled=not view.report.report_status.is_valid)
 
     async def callback(self, interaction: nextcord.Interaction):
         view = self.view
+        ...
 
 class EditButton(ui.Button):
     def __init__(self):
@@ -18,12 +18,16 @@ class EditButton(ui.Button):
         view : RankedView = self.view
 
         if not view.player_select.values:
-            ...
-        player_id = view.player_select.values[0]
+            await interaction.send("Error: No player selected", ephemeral=True)
+            return
+        player_id = int(view.player_select.values[0])
         if not view.position_select.values:
-            ...
-        position = view.player_select.values[0] if view.player_select.values else None
+            await interaction.send("Error: No position selected", ephemeral=True)
+            return
+        position = int(view.position_select.values[0])
         view.report.set_player_position(player_id, position)
+        await view.report.update_embed(view.client)
+        db.update_s1_match(view.report)
 
 class ReportQuitButton(ui.Button):
     def __init__(self):
@@ -40,7 +44,7 @@ class PlayerSelect(ui.Select):
     def get_player_name(user : nextcord.User, discord_id : int):
         if user:
             return user.name
-        return f"<@{discord_id}>"
+        return f"<{discord_id}>"
 
 
 class PositionSelect(ui.Select):
@@ -51,16 +55,16 @@ class PositionSelect(ui.Select):
 
 
 class RankedView(ui.View):
-    def __init__(self, report : ranked_commands.RankedReport, parent : nextcord.PartialMessage, client : nextcord.Client):
+    def __init__(self, report, parent : nextcord.PartialMessage, client : nextcord.Client):
         super().__init__(timeout=30)
-        self.report : ranked_commands.RankedReport = report
+        self.report = report
         self.parent : nextcord.PartialMessage = parent
         self.client : nextcord.Client = client
 
         self.player_select = PlayerSelect(self)
         self.position_select = PositionSelect(self)
 
-        self.add_item(ValidButton())
+        self.add_item(ValidButton(self))
         self.add_item(self.player_select)
         self.add_item(self.position_select)
         self.add_item(EditButton())
