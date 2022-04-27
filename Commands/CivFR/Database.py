@@ -3,6 +3,7 @@ import json
 import nextcord
 from typing import Optional, Tuple, List, Dict
 from enum import IntEnum
+from trueskill import Rating
 
 from .ReportParser import Report, GameType
 from .constant import RANKED_CHANNEL, RANKED_ADMIN_ROLES, RANKED_ADMIN_USERS
@@ -109,6 +110,9 @@ class RankedStats1:
         self.first = first
 
 class RankedMatch:
+
+    from  Ranked.RankCalculator import RankPreviewer
+
     def __init__(self, players_pos : Dict[int, int], validated=False, match_id=None):
         self.players : List[int] = [i for i in players_pos.keys()]
         self.players_pos : Dict[int, int] = players_pos # {player_id: position}
@@ -127,10 +131,19 @@ class RankedMatch:
         msg : nextcord.PartialMessage = channel.get_partial_message(self.id)
         await msg.edit(embed=self.get_embed())
 
-    def get_embed(self) -> nextcord.Embed:
+    def _get_embed_desc(self) -> str:
         desc = ""
-        for i in range(1, len(self.players)+1):
-            desc += f"\n``{i:>2}:``" + ' ,'.join(f"<@{pl}>" for pl in self.players if self.players_pos[pl] == i)
+        if self.report_status.is_valid:
+            player_ranks : Dict[int, float] = self.RankPreviewer.get_ranks_preview(self)
+            for pl, pos in sorted(self.players_pos.items(), key=lambda x: x[1]):
+                desc += f"\n``[{player_ranks[pl]:+4.0f}] {pos:>2}:`` <@{pl}>"
+        else:
+            for i in range(1, len(self.players)+1):
+                desc += f"\n``{i:>2}:``" + ' ,'.join(f"<@{pl}>" for pl in self.players if self.players_pos[pl] == i)
+        return desc
+
+    def get_embed(self) -> nextcord.Embed:
+        desc = self._get_embed_desc()
         pl_waiting = [k for k, v in self.players_pos.items() if v is None]
         if pl_waiting:
             desc += "\n\nEn attente de pointage: " + ', '.join(f"<@{pl}>" for pl in pl_waiting)
