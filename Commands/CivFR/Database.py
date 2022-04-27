@@ -6,7 +6,7 @@ from enum import IntEnum
 from trueskill import Rating
 
 from .ReportParser import Report, GameType
-from .constant import RANKED_CHANNEL, RANKED_ADMIN_ROLES, RANKED_ADMIN_USERS
+from .constant import RANKED_CHANNEL, RANKED_ADMIN_ROLES, RANKED_ADMIN_USERS, MU, SIGMA
 from util.exception import InvalidArgs
 
 GAMETYPE_TO_LOWERCASE = {
@@ -109,9 +109,12 @@ class RankedStats1:
         self.wins = wins
         self.first = first
 
+    def get_rating(self):
+        return Rating(self.mu, self.sigma)
+
 class RankedMatch:
 
-    from  Ranked.RankCalculator import RankPreviewer
+    import Commands.CivFR.Ranked.RankCalculator as RankCalculator
 
     def __init__(self, players_pos : Dict[int, int], validated=False, match_id=None):
         self.players : List[int] = [i for i in players_pos.keys()]
@@ -134,7 +137,7 @@ class RankedMatch:
     def _get_embed_desc(self) -> str:
         desc = ""
         if self.report_status.is_valid:
-            player_ranks : Dict[int, float] = self.RankPreviewer.get_ranks_preview(self)
+            player_ranks : Dict[int, float] = self.RankCalculator.RankPreviewer.get_ranks_preview(self)
             for pl, pos in sorted(self.players_pos.items(), key=lambda x: x[1]):
                 desc += f"\n``[{player_ranks[pl]:+4.0f}] {pos:>2}:`` <@{pl}>"
         else:
@@ -248,11 +251,17 @@ class Database:
         self.conn.execute('UPDATE RankedMatchs SET validated = 0 WHERE id = ?',(ranked_match.id,))
         self.conn.commit()
 
-    def get_s1_player_stats(self, player_id) -> ...:
-        return ...
+    def get_s1_player_stats(self, player_id) -> RankedStats1:
+        data = self.conn.execute("SELECT * FROM RankedStats1 WHERE id = ?", (player_id,))
+        rt = data.fetchone()
+        if not rt:
+            return RankedStats1(player_id, MU, SIGMA, 0, 0, 0)
+        return RankedStats1(*rt)
 
-    def update_s1_player_stats(self, player_stat):
-        ...
+    def update_s1_player_stats(self, rs : RankedStats1):
+        self.conn.execute("UPDATE RankedStats1 SET mu=?, sigma=?, games=?, wins=?, first=? WHERE id=?",
+                          (rs.mu, rs.sigma, rs.games, rs.wins, rs.first, rs.id))
+        self.conn.commit()
 
     def get_stat_for(self, discord_id) -> PlayerStat:
         data = self.conn.execute("""
