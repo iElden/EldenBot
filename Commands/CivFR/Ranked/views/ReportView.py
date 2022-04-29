@@ -1,6 +1,8 @@
 import nextcord
 from nextcord import ui, ButtonStyle
+
 from Commands.CivFR.Database import db
+from Commands.CivFR.Ranked.RankedFunc import update_player_ranks
 
 class ValidButton(ui.Button):
     def __init__(self, view):
@@ -8,7 +10,32 @@ class ValidButton(ui.Button):
 
     async def callback(self, interaction: nextcord.Interaction):
         view = self.view
-        ...
+        if self.view.report.validated:
+            return await interaction.send("Error: Match already Validated", ephemeral=True)
+        db.valid_s1_match(view.report)
+        await update_player_ranks(view.report)
+        await view.report.update_embed(client=view.client)
+
+class ScrapButton(ui.Button):
+    def __init__(self, view):
+        super().__init__(label="Scrap", style=ButtonStyle.red, row=4, disabled=False)
+
+    async def callback(self, interaction: nextcord.Interaction):
+        view = self.view
+        if self.view.report.validated:
+            return await interaction.send("Error: Match already Scrapped", ephemeral=True)
+        db.scrap_s1_match(view.report)
+        await update_player_ranks(view.report)  # TODO: Implement
+        await view.report.update_embed(client=view.client)
+
+class DeleteButton(ui.Button):
+    def __init__(self, view):
+        super().__init__(label="Delete", style=ButtonStyle.red, row=4, disabled=False)
+
+    async def callback(self, interaction: nextcord.Interaction):
+        view = self.view
+        db.delete_s1_match(view.report)
+        await view.report.delete(client=view.client)  # TODO: Implement
 
 class EditButton(ui.Button):
     def __init__(self):
@@ -24,6 +51,8 @@ class EditButton(ui.Button):
         if not view.position_select.values:
             await interaction.send("Error: No position selected", ephemeral=True)
             return
+        if self.view.report.validated:
+            return await interaction.send("Error: Match already Validated", ephemeral=True)
         position = int(view.position_select.values[0])
         view.report.set_player_position(player_id, position)
         await view.report.update_embed(view.client)
@@ -63,12 +92,15 @@ class RankedView(ui.View):
 
         self.player_select = PlayerSelect(self)
         self.position_select = PositionSelect(self)
+        self.valid_button = ValidButton(self)
 
-        self.add_item(ValidButton(self))
+        self.add_item(self.valid_button)
         self.add_item(self.player_select)
         self.add_item(self.position_select)
         self.add_item(EditButton())
         self.add_item(ReportQuitButton())
+        self.add_item(ScrapButton(self))
+        self.add_item(DeleteButton(self))
 
     async def on_timeout(self) -> None:
         await self.parent.edit(view=None)

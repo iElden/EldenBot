@@ -116,10 +116,11 @@ class RankedMatch:
 
     import Commands.CivFR.Ranked.RankCalculator as RankCalculator
 
-    def __init__(self, players_pos : Dict[int, int], validated=False, match_id=None):
+    def __init__(self, players_pos : Dict[int, int], validated=False, match_id=None, scrapped=False):
         self.players : List[int] = [i for i in players_pos.keys()]
         self.players_pos : Dict[int, int] = players_pos # {player_id: position}
         self.validated : bool = validated
+        self.scrapped : bool = scrapped
         self.id : Optional[id] = match_id
 
         self.report_status = self.get_report_status()
@@ -128,6 +129,11 @@ class RankedMatch:
     def new_game(cls, players : List[int]):
         self = cls({k: None for k in players})
         return self
+
+    async def delete(self, client : nextcord.Client):
+        channel = client.get_channel(RANKED_CHANNEL)
+        msg : nextcord.PartialMessage = channel.get_partial_message(self.id)
+        await msg.delete()
 
     async def update_embed(self, client : nextcord.Client):
         channel = client.get_channel(RANKED_CHANNEL)
@@ -138,23 +144,37 @@ class RankedMatch:
         desc = ""
         if self.report_status.is_valid:
             player_ranks : Dict[int, float] = self.RankCalculator.RankPreviewer.get_ranks_preview(self)
+            if self.scrapped:
+                for pl in sorted(self.players):
+                    desc += f"\n``[{player_ranks[pl]:+4.0f}] -:`` <@{pl}>"
+                return desc
+            # if game not scrapped :
             for pl, pos in sorted(self.players_pos.items(), key=lambda x: x[1]):
                 desc += f"\n``[{player_ranks[pl]:+4.0f}] {pos:>2}:`` <@{pl}>"
         else:
             for i in range(1, len(self.players)+1):
                 desc += f"\n``{i:>2}:``" + ' ,'.join(f"<@{pl}>" for pl in self.players if self.players_pos[pl] == i)
+            pl_waiting = [k for k, v in self.players_pos.items() if v is None]
+            if pl_waiting:
+                desc += "\n\nEn attente de pointage: " + ', '.join(f"<@{pl}>" for pl in pl_waiting)
         return desc
 
     def get_embed(self) -> nextcord.Embed:
         desc = self._get_embed_desc()
-        pl_waiting = [k for k, v in self.players_pos.items() if v is None]
-        if pl_waiting:
-            desc += "\n\nEn attente de pointage: " + ', '.join(f"<@{pl}>" for pl in pl_waiting)
+        self.report_status = self.get_report_status()
         em = nextcord.Embed(title="Ranked Report", description=desc, colour=self.report_status.color)
         em.add_field(name="Status", value=self.report_status.text)
         return em
 
     def get_report_status(self) -> ReportStatus:
+        if self.scrapped:
+            return ReportStatus(Color.PURPLE,
+                                "Match scrap",
+                                True)
+        if self.validated:
+            return ReportStatus(Color.BLUE,
+                                "Match validé",
+                                True)
         if None in self.players_pos.values():
             return ReportStatus(Color.RED,
                                 "Un ou plusieur joueurs n'ont pas validé leur position.\nLes joueurs qui n'ont pas validé leur position avant 24h seront placé dernier.",
@@ -170,7 +190,6 @@ class RankedMatch:
 
     def set_player_position(self, player_id : int, position : int):
         self.players_pos[player_id] = position
-        self.report_status = self.get_report_status()
 
     @classmethod
     def from_db(cls, js, validated, match_id):
@@ -209,6 +228,8 @@ class Database:
         CREATE TABLE IF NOT EXISTS RankedMatchs
         (id INT PRIMARY KEY,
         validated BOOLEAN NOT NULL DEFAULT 0,
+        scrapped BOLLEAN NOT NULL DEFAULT 0,
+        validator_id INT,
         json TEXT)
         """)
         self.conn.execute("""
@@ -251,6 +272,18 @@ class Database:
         self.conn.execute('UPDATE RankedMatchs SET validated = 0 WHERE id = ?',(ranked_match.id,))
         self.conn.commit()
 
+    def scrap_s1_match(self, ranked_match):
+        ranked_match.scrapped = True
+        for pl in ranked_match.players:
+            ranked_match.set_player_position(pl, 0)
+        js = json.dumps(ranked_match.players_pos)
+        self.conn.execute('UPDATE RankedMatchs SET scrapped=1, validated=1, json=? WHERE id = ?', (js, ranked_match.id))
+        self.conn.commit()
+
+    def delete_s1_match(self, ranked_match):
+        self.conn.execute('DELETE FROM RankedMatchs WHERE id = ?', (ranked_match.id,))
+        self.conn.commit()
+
     def get_s1_player_stats(self, player_id) -> RankedStats1:
         data = self.conn.execute("SELECT * FROM RankedStats1 WHERE id = ?", (player_id,))
         rt = data.fetchone()
@@ -259,8 +292,8 @@ class Database:
         return RankedStats1(*rt)
 
     def update_s1_player_stats(self, rs : RankedStats1):
-        self.conn.execute("UPDATE RankedStats1 SET mu=?, sigma=?, games=?, wins=?, first=? WHERE id=?",
-                          (rs.mu, rs.sigma, rs.games, rs.wins, rs.first, rs.id))
+        self.conn.execute("INSERT OR REPLACE INTO RankedStats1(id, mu, sigma, games, wins, first) VALUES (?,?,?,?,?,?)",
+                          (rs.id, rs.mu, rs.sigma, rs.games, rs.wins, rs.first))
         self.conn.commit()
 
     def get_stat_for(self, discord_id) -> PlayerStat:
@@ -338,5 +371,5 @@ class Database:
         players = data.fetchall()  # get all the results from the above query
         return [i[0] for i in players]
 
-db = Database()
+db : Database = Database()
 db.create_tables()

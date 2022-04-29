@@ -21,7 +21,7 @@ async def on_reaction(payload : nextcord.RawReactionActionEvent, *, client : nex
         raise ALEDException("Member not found on CivFR")
 
     ranked_match: RankedMatch = db.get_s1_match(payload.message_id)
-    if str(payload.emoji) == emoji.DRAGON:
+    if str(payload.emoji) == emoji.TURKEY:
         channel = client.get_channel(payload.channel_id)
         msg = channel.get_partial_message(payload.message_id)
         await msg.edit(view=views.RankedView(db.get_s1_match(msg.id), parent=msg, client=client))
@@ -44,7 +44,7 @@ class RankedGame:
         self.ranked_match.id = msg.id
         for i in range(1, len(self.ranked_match.players)+1):
             await msg.add_reaction(emoji.NB[i])
-        await msg.add_reaction(emoji.DRAGON)
+        await msg.add_reaction(emoji.TURKEY)
         db.add_s1_match(self.ranked_match)
 
     async def run(self, channel, member, client):

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import logging
 from trueskill import Rating, TrueSkill
 from typing import Dict, List, Iterable
@@ -19,8 +20,10 @@ class RankPreviewer:
                 report.players]
 
     @classmethod
-    def calc_new_ranks(cls, report, old_ranks : List[Rating]) -> List[Rating]:
+    def calc_new_ranks(cls, report : DB.RankedMatch, old_ranks : List[Rating]) -> List[Rating]:
         try:
+            if report.scrapped:
+                return [Rating(mu=i.mu-20, sigma=i.sigma) for i in old_ranks]
             new_ranks = cls.to_1d(
                 cls.env.rate([(i,) for i in old_ranks], ranks=[pos for pos in report.players_pos.values()])
             )
