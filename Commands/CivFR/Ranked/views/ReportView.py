@@ -36,7 +36,7 @@ class ValidButton(ModButton):
         super().__init__(label="Valider", style=ButtonStyle.green, row=3, disabled=not view.report.report_status.is_valid)
 
     async def callback(self, interaction: nextcord.Interaction):
-        await super(ModButton).callback(interaction)
+        await super().callback(interaction)
         view = self.view
         if self.view.report.validated:
             return await interaction.send("Error: Match already Validated", ephemeral=True)
@@ -49,7 +49,7 @@ class ScrapButton(ModButton):
         super().__init__(label="Scrap", style=ButtonStyle.red, row=4, disabled=False)
 
     async def callback(self, interaction: nextcord.Interaction):
-        await super(ModButton).callback(interaction)
+        await super().callback(interaction)
         view = self.view
         if self.view.report.validated:
             return await interaction.send("Error: Match already Scrapped", ephemeral=True)
@@ -62,7 +62,7 @@ class DeleteButton(ModButton):
         super().__init__(label="Delete", style=ButtonStyle.red, row=4, disabled=False)
 
     async def callback(self, interaction: nextcord.Interaction):
-        await super(ModButton).callback(interaction)
+        await super().callback(interaction)
         view = self.view
         db.delete_s1_match(view.report)
         await view.report.delete(client=view.client)  # TODO: Implement
@@ -72,7 +72,7 @@ class EditButton(ModButton):
         super().__init__(label="Assigner la position", style=ButtonStyle.blurple, row=3)
 
     async def callback(self, interaction: nextcord.Interaction):
-        await super(ModButton).callback(interaction)
+        await super().callback(interaction)
         view : RankedView = self.view
         if not view.player_select.values:
             await interaction.send("Error: No player selected", ephemeral=True)
