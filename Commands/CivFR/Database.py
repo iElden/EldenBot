@@ -160,8 +160,8 @@ class RankedMatch:
         return desc
 
     def get_embed(self) -> nextcord.Embed:
-        desc = self._get_embed_desc()
         self.report_status = self.get_report_status()
+        desc = self._get_embed_desc()
         em = nextcord.Embed(title="Ranked Report", description=desc, colour=self.report_status.color)
         em.add_field(name="Status", value=self.report_status.text)
         return em
