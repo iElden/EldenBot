@@ -177,7 +177,7 @@ class RankedMatch:
                                 True)
         if None in self.players_pos.values():
             return ReportStatus(Color.RED,
-                                "Un ou plusieur joueurs n'ont pas validé leur position.\nLes joueurs qui n'ont pas validé leur position avant 24h seront placé dernier.",
+                                "Un ou plusieur joueurs n'ont pas validé leur position.\nLes joueurs qui n'ont pas validé leur position avant 24h seront placés derniers.",
                                 False)
         if len(set(self.players_pos.values())) != len(self.players):
             return ReportStatus(Color.YELLOW,
