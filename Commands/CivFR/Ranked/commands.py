@@ -19,14 +19,16 @@ async def on_reaction(payload : nextcord.RawReactionActionEvent, *, client : nex
     member : nextcord.Member = civfr.get_member(payload.user_id)
     if not member:
         raise ALEDException("Member not found on CivFR")
-    if not views.member_is_authorised(member):
-        return
     ranked_match: RankedMatch = db.get_s1_match(payload.message_id)
     if str(payload.emoji) == emoji.TURKEY:
+        if not views.member_is_authorised(member):
+            return
         channel = client.get_channel(payload.channel_id)
         msg = channel.get_partial_message(payload.message_id)
         await msg.edit(view=views.RankedView(db.get_s1_match(msg.id), parent=msg, client=client))
     if str(payload.emoji) in emoji.NB:
+        if payload.user_id not in ranked_match.players:
+            return
         index = emoji.NB.index(str(payload.emoji))
         ranked_match.set_player_position(payload.user_id, index)
         await ranked_match.update_embed(client)
