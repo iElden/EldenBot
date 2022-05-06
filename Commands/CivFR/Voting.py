@@ -40,7 +40,7 @@ RANKED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
     "Age du monde": [("🗻", "Normal"), ("🌋", "Nouveau")],
     "Ressources": [(LETTER.C, "Classique"), (LETTER.A, "Abondante")],
     "Stratégiques": [(LETTER.C, "Classique"), (LETTER.A, "Abondante")],
-    "Ridges definition": [(LETTER.S, "Standard"), (LETTER.V, "Vanilla"), (LETTER.L, "Large opening")],
+    "Ridges definition": [(LETTER.S, "Standard"), (LETTER.V, "Classique"), (LETTER.L, "Large opening")],
     "Catastrophe": [(NB[0], "0"), (NB[1], "1"), (NB[2], "2"), (NB[3], "3"), (NB[4], "4")],
     DRAFT_MODE_TITLE: [("✅", DraftMode.WITH_TRADE.value), ("🚫", DraftMode.NO_TRADE.value), ("🙈", DraftMode.BLIND.value), ("❓", DraftMode.RANDOM.value)]
 }
