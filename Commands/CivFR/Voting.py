@@ -28,7 +28,7 @@ VOTED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
     "Nukes": [("☢️", "Autorisées"), ("⛔", "Interdites")],
     "Ressources": [(LETTER.C, "Classique"), (LETTER.A, "Abondante")],
     "Stratégiques": [(LETTER.C, "Classique"), (LETTER.A, "Abondante"), (LETTER.E, "Epique"), (LETTER.G, "Garentie")],
-    "Ridges definition": [(LETTER.S, "Standard"), (LETTER.V, "Vanilla"), (LETTER.L, "Large opening"), (LETTER.I, "Impénétrable")],
+    "Ridges definition": [(LETTER.S, "Standard"), (LETTER.C, "Classique"), (LETTER.L, "Large opening"), (LETTER.I, "Impénétrable")],
     "Catastrophe": [(NB[0], "0"), (NB[1], "1"), (NB[2], "2"), (NB[3], "3"), (NB[4], "4")],
     DRAFT_MODE_TITLE: [("✅", DraftMode.WITH_TRADE.value), ("🚫", DraftMode.NO_TRADE.value), ("🙈", DraftMode.BLIND.value), ("❓", DraftMode.RANDOM.value)]
 }
