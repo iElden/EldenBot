@@ -4,12 +4,9 @@ from trueskill import Rating, TrueSkill
 from typing import Dict, List, Iterable
 
 import Commands.CivFR.Database as DB
-from Commands.CivFR.constant import MU, SIGMA, BETA, TAU
+from Commands.CivFR.constant import MU, SIGMA, BETA, TAU, SKILL
 
 logger = logging.getLogger("RankCalculator")
-
-def SKILL(rating : Rating) -> float:
-    return rating.mu - max(rating.sigma - 50, 0)
 
 class RankPreviewer:
     env = TrueSkill(mu=MU, sigma=SIGMA, beta=BETA, tau=TAU, draw_probability=0.01)

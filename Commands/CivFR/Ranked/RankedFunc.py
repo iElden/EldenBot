@@ -1,8 +1,9 @@
 from trueskill import Rating
 import asyncio
 
-from .RankCalculator import SKILL, RankPreviewer
+from .RankCalculator import RankPreviewer
 import Commands.CivFR.Database as DB
+from Commands.CivFR.constant import SKILL
 
 async def update_player_ranks(match : DB.RankedMatch):
     old_ranks = RankPreviewer.get_current_rank_for_players(match)

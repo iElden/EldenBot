@@ -1,3 +1,5 @@
+from trueskill import Rating
+
 CIVFR_GUILD_ID = 197418659067592708
 TURKEY = "🦃"
 ARBITRE_ID = 514804914782863362
@@ -9,3 +11,6 @@ MU = 1100
 SIGMA = 150
 BETA = 400
 TAU = 10
+
+def SKILL(rating : Rating) -> float:
+    return rating.mu - max(rating.sigma - 50, 0)

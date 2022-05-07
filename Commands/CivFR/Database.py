@@ -296,6 +296,11 @@ class Database:
                           (rs.id, rs.mu, rs.sigma, rs.games, rs.wins, rs.first))
         self.conn.commit()
 
+    def get_all_s1_players_stats(self, min_games=1) -> List[RankedStats1]:
+        data = self.conn.execute("SELECT * FROM RankedStats1 WHERE games >= ?", (min_games,))
+        rts = data.fetchall()
+        return [RankedStats1(*rt) for rt in rts]
+
     def get_stat_for(self, discord_id) -> PlayerStat:
         data = self.conn.execute("""
             SELECT level, ffa_play, ffa_win, teamer_play, teamer_win, begin_ffa_play, begin_ffa_win, begin_teamer_play, begin_teamer_win, great_player, is_bad_coatch, longdate_member

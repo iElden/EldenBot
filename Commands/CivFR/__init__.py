@@ -6,7 +6,8 @@ from .Voting import CmdCivFRVoting
 from .Level import CmdCivFRLevel
 from .TeamerTool import CmdTeamerTools
 from .Ranked.commands import CmdCivFRRanked
+from .Ranked.Leaderboards import CmdLeaderboards
 
 class CmdCivFR(CmdCivGeneralFR, CmdCivFRDDraft, CmdCivDraft, CmdCivFRVoting, CmdCivFRLevel, CmdTeamerTools,
-               CmdCivFRRanked):
+               CmdCivFRRanked, CmdLeaderboards):
     pass
