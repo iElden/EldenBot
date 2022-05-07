@@ -15,7 +15,7 @@ class CmdLeaderboards:
         if not channel:
             raise ALEDException(
                 f"Can't find channel ID {LB_FFA['channel_id']} for the Leaderboard")
-        players.sort(key=lambda pl_: SKILL(pl.get_rating()), reverse=True)
+        players.sort(key=lambda pl_: SKILL(pl_.get_rating()), reverse=True)
         txt = "`Place Points [wins - loss]  win%  1er`\n"
         for j, msg_id in enumerate(LB_FFA['message_id']):
             msg: nextcord.PartialMessage = channel.get_partial_message(msg_id)
