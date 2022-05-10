@@ -1,3 +1,4 @@
+import random
 import sqlite3 as sq3
 import json
 import nextcord
@@ -121,7 +122,7 @@ class RankedMatch:
         self.players_pos : Dict[int, int] = players_pos # {player_id: position}
         self.validated : bool = validated
         self.scrapped : bool = scrapped
-        self.id : Optional[id] = match_id
+        self.id : Optional[int] = match_id
 
         self.report_status = self.get_report_status()
 
@@ -190,6 +191,22 @@ class RankedMatch:
 
     def set_player_position(self, player_id : int, position : int):
         self.players_pos[player_id] = position
+
+    def fill_unreported_players(self, author : nextcord.User) -> str:
+        old_str = self.player_pos_oneliner()
+        pl_pos = sorted(self.players_pos.items(), key=lambda i: i[1] if i[1] is not None else 99)
+        good_players = [k for k, v in pl_pos if v is not None]
+        bad_players = [k for k, v in pl_pos if v is None]
+        random.shuffle(bad_players)
+        self.players_pos = {pl: pos for pos, pl in enumerate(good_players + bad_players)}
+        new_str = self.player_pos_oneliner()
+        bad_players_str = ' '.join(f"<@{i}>" for i in bad_players)
+        return (f"{author.mention} has requested autofill for match {self.id}. targetting : {bad_players_str}\n"
+                f"Old: {old_str}\nNew: {new_str}")
+
+    def player_pos_oneliner(self) -> str:
+        ls = sorted(self.players_pos.items(), key=lambda i: i[1] if i[1] is not None else 99)
+        return ', '.join(f"{'?' if None else pos}: <@{pl}>" for pl, pos in ls)
 
     @classmethod
     def from_db(cls, js, validated, match_id):
