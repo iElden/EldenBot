@@ -54,7 +54,7 @@ class ScrapButton(ModButton):
         if self.view.report.validated:
             return await interaction.send("Error: Match already Scrapped", ephemeral=True)
         db.scrap_s1_match(view.report)
-        await update_player_ranks(view.report)  # TODO: Implement
+        await update_player_ranks(view.report)
         await view.report.update_embed(client=view.client)
 
 class DeleteButton(ModButton):
@@ -65,7 +65,7 @@ class DeleteButton(ModButton):
         await super().callback(interaction)
         view = self.view
         db.delete_s1_match(view.report)
-        await view.report.delete(client=view.client)  # TODO: Implement
+        await view.report.delete(client=view.client)
 
 class EditButton(ModButton):
     def __init__(self):
