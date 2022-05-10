@@ -208,6 +208,9 @@ class RankedMatch:
         ls = sorted(self.players_pos.items(), key=lambda i: i[1] if i[1] is not None else 99)
         return ', '.join(f"{'?' if None else pos}: <@{pl}>" for pl, pos in ls)
 
+    def get_players_mention_string(self) -> str:
+        return ' '.join(f"<@{i}>" for i in self.players)
+
     @classmethod
     def from_db(cls, js, validated, match_id):
         return cls({int(k):v for k, v in js.items()}, validated, match_id)

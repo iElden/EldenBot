@@ -43,7 +43,8 @@ class RankedGame:
 
     async def post_report(self, client : nextcord.Client):
         channel = client.get_channel(RANKED_CHANNEL)
-        msg = await channel.send(embed=self.ranked_match.get_embed())
+        msg = await channel.send(content=self.ranked_match.get_players_mention_string(),
+                                 embed=self.ranked_match.get_embed())
         self.ranked_match.id = msg.id
         for i in range(1, len(self.ranked_match.players)+1):
             await msg.add_reaction(emoji.NB[i])
