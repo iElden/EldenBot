@@ -99,7 +99,7 @@ class AutoFillButton(ModButton):
     async def callback(self, interaction: nextcord.Interaction):
         await super().callback(interaction)
         view: RankedView = self.view
-        view.report.fill_unreported_players()
+        view.report.fill_unreported_players(interaction.user)
         db.update_s1_match(view.report)
         await view.report.update_embed(client=view.client)
 
