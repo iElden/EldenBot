@@ -198,7 +198,7 @@ class RankedMatch:
         good_players = [k for k, v in pl_pos if v is not None]
         bad_players = [k for k, v in pl_pos if v is None]
         random.shuffle(bad_players)
-        self.players_pos = {pl: pos for pos, pl in enumerate(good_players + bad_players)}
+        self.players_pos = {pl: pos+1 for pos, pl in enumerate(good_players + bad_players)}
         new_str = self.player_pos_oneliner()
         bad_players_str = ' '.join(f"<@{i}>" for i in bad_players)
         return (f"{author.mention} has requested autofill for match {self.id}. targetting : {bad_players_str}\n"

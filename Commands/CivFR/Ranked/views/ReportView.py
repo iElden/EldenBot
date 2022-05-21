@@ -94,7 +94,7 @@ class ReportQuitButton(ModButton):
 
 class AutoFillButton(ModButton):
     def __init__(self):
-        super().__init__(label="AutoFill players", style=ButtonStyle.blurple, row=3)
+        super().__init__(label="AutoFill players", style=ButtonStyle.red, row=4)
 
     async def callback(self, interaction: nextcord.Interaction):
         await super().callback(interaction)
