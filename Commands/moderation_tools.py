@@ -30,9 +30,11 @@ class CmdModeration:
         end_msg_id = int(args[2])
         log_channel = client.get_channel(int(args[3]))
 
+        print("loading history")
         history : List[nextcord.Message] = await channel.history(after=channel.get_partial_message(start_msg_id),
                                         before=channel.get_partial_message(end_msg_id),
                                         limit=None).flatten()
+        print(f"Found {len(history)} messages")
         for msg in history:
             if msg.type == nextcord.MessageType.new_member:
                 if len(msg.author.roles) != 1:
