@@ -36,7 +36,9 @@ class CmdModeration:
                                         limit=None).flatten()
         print(f"Found {len(history)} messages")
         for msg in history:
+            print(msg.type)
             if msg.type == nextcord.MessageType.new_member:
+                print(msg.author, len(msg.author.roles))
                 if len(msg.author.roles) != 1:
                     await channel.send(f"Error while banning {msg.author.mention}, this member not have only 1 role")
                     continue
