@@ -59,7 +59,7 @@ class RankedGame:
 
 
 class CmdCivFRRanked:
-    async def cmd_rankedstats(self, *args, channel, member):
+    async def cmd_rankedstats(self, *args, channel, member, **_):
         if not args:
             target = member
         else:
