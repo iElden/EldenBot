@@ -7,7 +7,7 @@ from enum import IntEnum
 from trueskill import Rating
 
 from .ReportParser import Report, GameType
-from .constant import RANKED_CHANNEL, RANKED_ADMIN_ROLES, RANKED_ADMIN_USERS, MU, SIGMA
+from .constant import RANKED_CHANNEL, RANKED_ADMIN_ROLES, RANKED_ADMIN_USERS, MU, SIGMA, SKILL
 from util.exception import InvalidArgs
 
 GAMETYPE_TO_LOWERCASE = {
@@ -112,6 +112,25 @@ class RankedStats1:
 
     def get_rating(self):
         return Rating(self.mu, self.sigma)
+
+    def create_embed_field(self, em : nextcord.Embed):
+        statlist: List[Tuple[str, ...]] = [
+            ('Points', f"{SKILL(self.get_rating()):.0f}"),
+            ('TS Mu', f"{self.mu:.0f}"),
+            ('TS Sigma', f"{self.sigma:.0f}"),
+            # ('Win %', f'{self.wins / self.games:.1%}'),
+            ('Partie jouées', f"{self.games}"),
+            ('Victoire', f"{self.wins}"),
+            ('Premier', f"{self.first}"),
+            ('✅ Café bu', self.id if self.id in RANKED_ADMIN_USERS else 0)
+        ]
+        max_length = max(len(i) for i, _ in statlist)
+        em.add_field(name='FFA Ranked', value='\n'.join(f"`{i:>{max_length}}`: {j}" for i, j in statlist))
+
+    def to_embed(self, member=None):
+        em = nextcord.Embed(title="Stats classées", description=f"Stat de <@{self.id}>", colour=member.colour if member else 0)
+        self.create_embed_field(em)
+        return em
 
 class RankedMatch:
 

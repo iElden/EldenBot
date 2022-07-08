@@ -59,6 +59,15 @@ class RankedGame:
 
 
 class CmdCivFRRanked:
+    async def cmd_rankedstats(self, *args, channel, member):
+        if not args:
+            target = member
+        else:
+            raise NotImplemented(emoji.OK + " Boire un café ")
+        st = db.get_s1_player_stats(target.id)
+        await channel.send(embed=st.to_embed())
+
+
     async def cmd_startranked(self, *args, channel, client, member, message, **_):
         players = await self.parse_vote_args(args, channel, member, message)
         rg = RankedGame(players)
