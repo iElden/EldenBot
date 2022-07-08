@@ -92,6 +92,17 @@ class ReportQuitButton(ModButton):
     def __init__(self):
         super().__init__(label="Bannir pour Quit", style=ButtonStyle.red, row=3, disabled=True)
 
+class AutoFillButton(ModButton):
+    def __init__(self):
+        super().__init__(label="AutoFill players", style=ButtonStyle.red, row=4)
+
+    async def callback(self, interaction: nextcord.Interaction):
+        await super().callback(interaction)
+        view: RankedView = self.view
+        view.report.fill_unreported_players(interaction.user)
+        db.update_s1_match(view.report)
+        await view.report.update_embed(client=view.client)
+
 class PlayerSelect(ModSelect):
     def __init__(self, view):
         player_names = [self.get_player_name(view.client.get_user(i), i) for i in view.report.players]
@@ -131,6 +142,7 @@ class RankedView(ui.View):
         self.add_item(ReportQuitButton())
         self.add_item(ScrapButton(self))
         self.add_item(DeleteButton(self))
+        self.add_item(AutoFillButton())
 
     async def on_timeout(self) -> None:
         await self.parent.edit(view=None)

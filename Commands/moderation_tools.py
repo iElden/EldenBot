@@ -3,10 +3,13 @@ import datetime
 from util.decorator import can_manage_message, only_owner
 from util.exception import InvalidArgs
 
+from typing import List
+
 MOD_DELETED = ("Votre message a été supprimé par {} pour la raison suivante :"
                + "\n{}\nRappel du message :\n{}")
 MOD_MOVE = ("Votre message a été déplacé de {} à {} par {} pour la raison "
             + "suivante :\n{}")
+SCAM_BOT = "Vous avez été banni car votre profil a été detecté comme un bot, si ce n'est pas le cas, contactez le twitter CivFR pour faire deban votre compte: https://twitter.com/civfr"
 
 async def move_message(msg, target, reason):
     em = nextcord.Embed(description=msg.content, timestamp=msg.created_at)
@@ -21,16 +24,31 @@ async def move_message(msg, target, reason):
 
 class CmdModeration:
     @only_owner
-    async def cmd_jailaflemmedetoutbanalamain(self, *args, message : nextcord.Message, channel, member, **_):
-        for member in message.mentions:
-            try:
-                if len(member.roles) != 1:
-                    await channel.send(f"Error while banning {member.mention}, this member not have only 1 role")
+    async def cmd_jailaflemmedetoutbanalamain(self, *args, message : nextcord.Message, client, **_):
+        channel = client.get_channel(int(args[0]))
+        start_msg_id = int(args[1])
+        end_msg_id = int(args[2])
+        log_channel = client.get_channel(int(args[3]))
+
+        print("loading history")
+        history : List[nextcord.Message] = await channel.history(after=channel.get_partial_message(start_msg_id),
+                                        before=channel.get_partial_message(end_msg_id),
+                                        limit=None).flatten()
+        print(f"Found {len(history)} messages")
+        for msg in history:
+            print(msg.type)
+            if msg.type == nextcord.MessageType.new_member:
+                print(msg.author, len(msg.author.roles))
+                if len(msg.author.roles) != 1:
+                    await channel.send(f"Error while banning {msg.author.mention}, this member not have only 1 role")
                     continue
-                await member.ban(reason="Scam bot")
-                await channel.send(f"Banned {member.mention} for the following reason : Scam bot")
-            except:
-                pass
+                try:
+                    await msg.author.send(SCAM_BOT)
+                    await msg.author.ban(reason="Scam Bot")
+                    await log_channel.send(f"<@{msg.author.id}> a été banni pour SCAM")
+                except:
+                    pass
+
 
     @can_manage_message
     async def cmd_mdelete(self, *args, message, channel, member, **_):
