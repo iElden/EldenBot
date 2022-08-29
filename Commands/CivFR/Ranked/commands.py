@@ -9,8 +9,8 @@ from Commands.CivFR.constant import CIVFR_GUILD_ID, RANKED_CHANNEL
 from Commands.CivFR.utils import is_arbitre
 from Commands.CivFR.Database import db, RankedMatch
 from constant import emoji
-from util.exception import ALEDException, BotError
-from util.function import get_member_in_channel
+from util.exception import ALEDException, BotError, NotFound
+from util.function import get_member_in_channel, get_member
 
 async def on_reaction(payload : nextcord.RawReactionActionEvent, *, client : nextcord.Client):
     if payload.channel_id != RANKED_CHANNEL:
@@ -59,7 +59,7 @@ class RankedGame:
 
 
 class CmdCivFRRanked:
-    async def cmd_rankedstats(self, *args, channel, member, **_):
+    async def cmd_rankedstats(self, *args, channel, member, guild, **_):
         if not args:
             target = member
         else:

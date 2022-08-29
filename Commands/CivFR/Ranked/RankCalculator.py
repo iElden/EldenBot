@@ -20,10 +20,16 @@ class RankPreviewer:
     def calc_new_ranks(cls, report : DB.RankedMatch, old_ranks : List[Rating]) -> List[Rating]:
         try:
             if report.scrapped:
-                return [Rating(mu=i.mu-20, sigma=i.sigma) for i in old_ranks]
+                return [Rating(mu=i.mu-5, sigma=i.sigma) for i in old_ranks]
             new_ranks = cls.to_1d(
                 cls.env.rate([(i,) for i in old_ranks], ranks=[pos for pos in report.players_pos.values()])
             )
+            for old_r, new_r in zip(new_ranks[:3], old_ranks[:3]): # Top 3 can't lose point
+                if  old_r.mu < new_r.mu:
+                    new_r.mu = old_r.mu
+            for old_r, new_r in zip(new_ranks[-3:], old_ranks[-3:]): # Bottom 3 can't win point
+                if  new_r.mu < old_r.mu:
+                    new_r.mu = old_r.mu
         except ValueError as e:
             logger.error(f"{type(e).__name__}: {e}")
             return old_ranks

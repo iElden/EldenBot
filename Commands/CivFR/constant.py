@@ -14,4 +14,4 @@ BETA = 400
 TAU = 10
 
 def SKILL(rating : Rating) -> float:
-    return rating.mu - max(rating.sigma - 50, 0)
+    return rating.mu - max(rating.sigma - 100, 0)
