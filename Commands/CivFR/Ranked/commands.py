@@ -73,7 +73,7 @@ class CmdCivFRRanked:
         rg = RankedGame(players)
         await rg.run(channel, member, client)
 
-    async def cmd_refreshcivfrreportfromdb(self, *args, channel, client):
+    async def cmd_refreshcivfrreportfromdb(self, *args, channel, client, **_):
         target_id = int(args[0])
         ranked_match: RankedMatch = db.get_s1_match(target_id)
         await ranked_match.update_embed(client)
