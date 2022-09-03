@@ -73,6 +73,11 @@ class CmdCivFRRanked:
         rg = RankedGame(players)
         await rg.run(channel, member, client)
 
+    async def cmd_refreshcivfrreportfromdb(self, *args, channel, client):
+        target_id = int(args[0])
+        ranked_match: RankedMatch = db.get_s1_match(target_id)
+        await ranked_match.update_embed(client)
+
     @staticmethod
     async def parse_vote_args(args, channel, member, message):
         if not args:
