@@ -24,12 +24,12 @@ class RankPreviewer:
             new_ranks = cls.to_1d(
                 cls.env.rate([(i,) for i in old_ranks], ranks=[pos for pos in report.players_pos.values()])
             )
-            for old_r, new_r in zip(new_ranks[:3], old_ranks[:3]): # Top 3 can't lose point
+            for i, (old_r, new_r) in enumerate(zip(new_ranks[:3], old_ranks[:3])): # Top 3 can't lose point
                 if  new_r.mu < old_r.mu:
-                    new_r.mu = old_r.mu
-            for old_r, new_r in zip(new_ranks[-3:], old_ranks[-3:]): # Bottom 3 can't win point
+                    new_ranks[i] = old_r
+            for i, (old_r, new_r) in enumerate(zip(new_ranks[-3:], old_ranks[-3:])): # Bottom 3 can't win point
                 if  new_r.mu > old_r.mu:
-                    new_r.mu = old_r.mu
+                    new_ranks[len(new_ranks)-3+i] = old_r
         except ValueError as e:
             logger.error(f"{type(e).__name__}: {e}")
             return old_ranks
