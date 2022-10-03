@@ -101,7 +101,7 @@ class Match:
             return Color.YELLOW, "Les équipes ne contienne pas le même nombre de joueur"
         return Color.GREEN, "En attente de validation"
 
-class RankedStats1:
+class RankedStats2:
     def __init__(self, discord_id, mu, sigma, games, wins, first):
         self.id = discord_id
         self.mu = mu
@@ -272,7 +272,7 @@ class Database:
         json TEXT)
         """)
         self.conn.execute("""
-        CREATE TABLE IF NOT EXISTS RankedStats1
+        CREATE TABLE IF NOT EXISTS RankedStats2
         (id INT PRIMARY KEY NOT NULL,
         mu INT NOT NULL DEFAULT 0,
         sigma INT NOT NULL DEFAULT 0,
@@ -323,22 +323,22 @@ class Database:
         self.conn.execute('DELETE FROM RankedMatchs WHERE id = ?', (ranked_match.id,))
         self.conn.commit()
 
-    def get_s1_player_stats(self, player_id) -> RankedStats1:
-        data = self.conn.execute("SELECT * FROM RankedStats1 WHERE id = ?", (player_id,))
+    def get_s1_player_stats(self, player_id) -> RankedStats2:
+        data = self.conn.execute("SELECT * FROM RankedStats2 WHERE id = ?", (player_id,))
         rt = data.fetchone()
         if not rt:
-            return RankedStats1(player_id, MU, SIGMA, 0, 0, 0)
-        return RankedStats1(*rt)
+            return RankedStats2(player_id, MU, SIGMA, 0, 0, 0)
+        return RankedStats2(*rt)
 
-    def update_s1_player_stats(self, rs : RankedStats1):
-        self.conn.execute("INSERT OR REPLACE INTO RankedStats1(id, mu, sigma, games, wins, first) VALUES (?,?,?,?,?,?)",
+    def update_s1_player_stats(self, rs : RankedStats2):
+        self.conn.execute("INSERT OR REPLACE INTO RankedStats2(id, mu, sigma, games, wins, first) VALUES (?,?,?,?,?,?)",
                           (rs.id, rs.mu, rs.sigma, rs.games, rs.wins, rs.first))
         self.conn.commit()
 
-    def get_all_s1_players_stats(self, min_games=1) -> List[RankedStats1]:
-        data = self.conn.execute("SELECT * FROM RankedStats1 WHERE games >= ?", (min_games,))
+    def get_all_s1_players_stats(self, min_games=1) -> List[RankedStats2]:
+        data = self.conn.execute("SELECT * FROM RankedStats2 WHERE games >= ?", (min_games,))
         rts = data.fetchall()
-        return [RankedStats1(*rt) for rt in rts]
+        return [RankedStats2(*rt) for rt in rts]
 
     def get_stat_for(self, discord_id) -> PlayerStat:
         data = self.conn.execute("""

@@ -11,7 +11,7 @@ async def update_player_ranks(match : DB.RankedMatch):
     print(old_ranks, new_ranks)
     for (player_id, pos), old_rank, rank in zip(match.players_pos.items(), old_ranks, new_ranks):
         print(player_id, pos, old_rank, rank)
-        stat : DB.RankedStats1 = DB.db.get_s1_player_stats(player_id)
+        stat : DB.RankedStats2 = DB.db.get_s1_player_stats(player_id)
         # Update player stats
         stat.mu = rank.mu
         stat.sigma = rank.sigma
