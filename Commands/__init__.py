@@ -21,7 +21,7 @@ from .latex import CmdLatex
 from .link import CmdLink
 from .Linq import CmdLinq
 from .lol_score import CmdLolScore
-from .LoLQuizz import CmdLoLQuizz
+# from .LoLQuizz import CmdLoLQuizz
 from .moderation_tools import CmdModeration
 from .money import CmdMoney
 from .music import CmdMusic
@@ -37,7 +37,8 @@ from LoupGarou.lg import CmdLg
 class Command(CmdRoll, CmdLatex, CmdRgapi, CmdLink, CmdDeleteAllMessage,
               CmdVerif, CmdLolScore, CmdMusic, CmdModeration, CmdLg,
               CmdMoney, CmdInfos, CmdUseless, CmdHelp,
-              CmdJdr, CmdLoLQuizz, CmdTFT, CmdLinq, CmdCivFR, CmdFFATournament,
+              # CmdLoLQuizz,
+              CmdJdr, CmdTFT, CmdLinq, CmdCivFR, CmdFFATournament,
               CmdReaction, CmdUtility, CmdBBGDisplayVote):
     sleep = False
 

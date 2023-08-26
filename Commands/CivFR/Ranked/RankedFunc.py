@@ -19,5 +19,4 @@ async def update_player_ranks(match : DB.RankedMatch):
         stat.wins += SKILL(rank) >= SKILL(old_rank)
         stat.first += pos == 1
         DB.db.update_s1_player_stats(stat)
-        print("prout")
         # await asyncio.create_task(self.recalc_rank_role_by_id(player.id))

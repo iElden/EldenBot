@@ -3,14 +3,16 @@ from typing import List, Tuple, Dict
 import asyncio
 
 from .views import ReportView as views
+from .RankedFunc import update_player_ranks
 
 from Commands.CivFR.Voting import Voting, RANKED_SETTINGS
 from Commands.CivFR.constant import CIVFR_GUILD_ID, RANKED_CHANNEL
 from Commands.CivFR.utils import is_arbitre
 from Commands.CivFR.Database import db, RankedMatch
 from constant import emoji
-from util.exception import ALEDException, BotError, NotFound
+from util.exception import ALEDException, BotError, NotFound, InvalidArgs
 from util.function import get_member_in_channel, get_member
+from util.decorator import only_owner
 
 async def on_reaction(payload : nextcord.RawReactionActionEvent, *, client : nextcord.Client):
     if payload.channel_id != RANKED_CHANNEL:
@@ -77,6 +79,23 @@ class CmdCivFRRanked:
         target_id = int(args[0])
         ranked_match: RankedMatch = db.get_s1_match(target_id)
         await ranked_match.update_embed(client)
+
+    @only_owner
+    async def cmd_recalcrankedfrom(self, *args : str, channel, **_):
+        if not args:
+            raise InvalidArgs("Excepting a Partial Discord ID")
+        if not args[0].isdigit():
+            raise InvalidArgs("Partial Discord ID must be an int")
+        channel.send("Wiping all stats ...")
+        db.delete_all_current_stats()
+        matchs = db.get_all_ranked_matchs_from(args[0])
+        channel.send(f"Find {len(matchs)} ranked matchs from {args[0]}. Processing ...")
+        for i, match in enumerate(matchs):
+            desc = match._get_embed_desc()
+            header = f"```\nMatch {match.id} | {nextcord.utils.snowflake_time(match.id)} | {i+1}/{len(matchs)}```\n\n"
+            await channel.send(header + desc)
+            await update_player_ranks(match)
+            await asyncio.sleep(0.5)
 
     @staticmethod
     async def parse_vote_args(args, channel, member, message):

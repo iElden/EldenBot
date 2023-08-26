@@ -397,6 +397,10 @@ class Database:
                           (match_id,))
         self.conn.commit()
 
+    def delete_all_current_stats(self):
+        self.conn.execute('DELETE FROM RankedStats2')
+        self.conn.commit()
+
     def get_match(self, match_id : int) -> Optional[Match]:
         data = self.conn.execute("SELECT id, check_msg_id, validated, json FROM Matchs WHERE id = ? OR check_msg_id = ?", (match_id, match_id))
         rt = data.fetchone()
@@ -409,6 +413,11 @@ class Database:
         data = self.conn.execute("SELECT id, check_msg_id, validated, json FROM Matchs WHERE Validated = 1")
         rts = data.fetchall()
         return [Match(int(rt[0]), bool(rt[2]), Report.from_json(json.loads(rt[3])), rt[1] and int(rt[1])) for rt in rts]
+
+    def get_all_ranked_matchs_from(self, start_id : str) -> List[RankedMatch]:
+        data = self.conn.execute(f"SELECT id, validated, json FROM RankedMatchs WHERE id>{start_id} AND validated=1")
+        rts = data.fetchall()
+        return [RankedMatch.from_db(json.loads(rt[2]), rt[1], rt[0]) for rt in rts]
 
     def get_all_players(self):
         data = self.conn.execute("SELECT discord_id FROM Players")  # execute a simple SQL select query
