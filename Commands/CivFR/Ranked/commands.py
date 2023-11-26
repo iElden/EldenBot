@@ -65,7 +65,10 @@ class CmdCivFRRanked:
         if not args:
             target = member
         else:
-            raise NotImplemented(emoji.OK + " Boire un café ")
+            name = ' '.join(args)
+            target = get_member(guild, name)
+            if not target:
+                raise NotFound(f"Member named \"{name}\" not found")
         st = db.get_s1_player_stats(target.id)
         await channel.send(embed=st.to_embed())
 
