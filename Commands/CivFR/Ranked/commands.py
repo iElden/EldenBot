@@ -84,7 +84,7 @@ class CmdCivFRRanked:
         await ranked_match.update_embed(client)
 
     @only_owner
-    async def cmd_recalcrankedfrom(self, *args : str, channel, **_):
+    async def cmd_recalcrankedfrom(self, *args : str, channel, client, **_):
         if not args:
             raise InvalidArgs("Excepting a Partial Discord ID")
         if not args[0].isdigit():
@@ -97,7 +97,7 @@ class CmdCivFRRanked:
             desc = match._get_embed_desc()
             header = f"```\nMatch {match.id} | {nextcord.utils.snowflake_time(match.id)} | {i+1}/{len(matchs)}```\n\n"
             await channel.send(header + desc)
-            await update_player_ranks(match)
+            await update_player_ranks(match, client=client)
             await asyncio.sleep(0.5)
 
     @staticmethod
