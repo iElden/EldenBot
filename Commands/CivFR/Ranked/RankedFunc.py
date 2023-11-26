@@ -29,5 +29,5 @@ async def send_debug_points_report(match : DB.RankedMatch, old_ranks : List[Rati
     txt = "__**POINT UPDATE**__"
     channel = client.get_channel(RANKED_LOG_CHANNEL)
     for (player_id, pos), old_rank, rank in zip(match.players_pos.items(), old_ranks, new_ranks):
-        txt = f"\n\n<@{player_id}> :\nMu   : {old_rank.mu:.2f} => {rank.mu:.2f}\nSigma: {old_rank.sigma:.2f} => {rank.sigma:.2f}\nSkill: {SKILL(old_rank)} => {SKILL(rank)}"
+        txt += f"\n\n<@{player_id}> :\nMu   : {old_rank.mu:.2f} => {rank.mu:.2f}\nSigma: {old_rank.sigma:.2f} => {rank.sigma:.2f}\nSkill: {SKILL(old_rank)} => {SKILL(rank)}"
     await channel.send(txt)
