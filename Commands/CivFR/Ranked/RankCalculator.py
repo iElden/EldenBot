@@ -25,10 +25,10 @@ class RankPreviewer:
                 cls.env.rate([(i,) for i in old_ranks], ranks=[pos for pos in report.players_pos.values()])
             )
             nb_player = len(report.players)
-            for i, (player_id, old_r, new_r) in enumerate(zip(report.players, new_ranks, old_ranks)): # Top 3 can't lose point
+            for i, (player_id, old_r, new_r) in enumerate(zip(report.players, old_ranks, new_ranks)): # Top 3 can't lose point
                 if nb_player > 6 and report.players_pos[player_id] <= 3 and new_r.mu < old_r.mu:
                     new_ranks[i] = Rating(mu=old_r.mu + 1, sigma=old_r.sigma)
-                if nb_player > 6 and report.players_pos[player_id] >= nb_player-3 and new_r.mu > old_r.mu:
+                elif nb_player > 6 and report.players_pos[player_id] >= nb_player-3 and new_r.mu > old_r.mu:
                     new_ranks[i] = Rating(mu=old_r.mu - 1, sigma=old_r.sigma)
         except ValueError as e:
             logger.error(f"{type(e).__name__}: {e}")

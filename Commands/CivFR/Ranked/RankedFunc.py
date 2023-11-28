@@ -8,6 +8,7 @@ import Commands.CivFR.Database as DB
 from Commands.CivFR.constant import SKILL, RANKED_LOG_CHANNEL
 
 async def update_player_ranks(match : DB.RankedMatch, client : nextcord.Client=None):
+    print("===================================")
     old_ranks = RankPreviewer.get_current_rank_for_players(match)
     new_ranks = RankPreviewer.calc_new_ranks(match, old_ranks)
     print(old_ranks, new_ranks)
