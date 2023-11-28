@@ -41,8 +41,8 @@ class ValidButton(ModButton):
         if self.view.report.validated:
             return await interaction.send("Error: Match already Validated", ephemeral=True)
         db.valid_s1_match(view.report)
-        await update_player_ranks(view.report, client=view.client)
         await view.report.update_embed(client=view.client)
+        await update_player_ranks(view.report, client=view.client)
 
 class ScrapButton(ModButton):
     def __init__(self, view):
