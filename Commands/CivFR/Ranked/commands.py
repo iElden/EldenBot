@@ -89,10 +89,10 @@ class CmdCivFRRanked:
             raise InvalidArgs("Excepting a Partial Discord ID")
         if not args[0].isdigit():
             raise InvalidArgs("Partial Discord ID must be an int")
-        channel.send("Wiping all stats ...")
+        await channel.send("Wiping all stats ...")
         db.delete_all_current_stats()
         matchs = db.get_all_ranked_matchs_from(args[0])
-        channel.send(f"Find {len(matchs)} ranked matchs from {args[0]}. Processing ...")
+        await channel.send(f"Find {len(matchs)} ranked matchs from {args[0]}. Processing ...")
         for i, match in enumerate(matchs):
             desc = match._get_embed_desc()
             header = f"```\nMatch {match.id} | {nextcord.utils.snowflake_time(match.id)} | {i+1}/{len(matchs)}```\n\n"
