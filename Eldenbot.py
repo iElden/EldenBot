@@ -119,7 +119,7 @@ async def on_message(m):
         args = m.content.split(' ')[2:]
         await command.cmd_music(*args, message=m, member=m.author, force=False, cmd=None,
                                 client=client, channel=m.channel, guild=m.guild, content=m.content)
-    elif client.user in m.mentions and m.author != client.user:
+    elif client.user in m.mentions and m.author != client.user and not m.reference:
         await random_message(client, m)
     try:
         await civfrlevel_on_message(m)
