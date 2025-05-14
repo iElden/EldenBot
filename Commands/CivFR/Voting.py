@@ -51,7 +51,7 @@ VOTED_SETTINGSCIV7 : Dict[str, List[Tuple[EMOJI, str]]] = {
     "Souvenirs": [("✅", "Activés"), ("❌", "Désactivés")],
     "Emplacement de départ": [("🗿", "Standard"), ("🏞️", "équilibré")],
     "Crises": [("✅", "Activés"), ("❌", "Désactivés")],
-    "Intensité des catastrophes naturelles ": [("⛱️ ", "légère"), ("🌨", "modérée"), ("🌋", "catastrophique")],
+    "Intensité des catastrophes naturelles ": [("⛱", "légère"), ("🌨", "modérée"), ("🌋", "catastrophique")],
     "IA": [("✅", "Activés"), ("❌", "Désactivés")],
     "Draft": [("🐍", "Serpentine"), ("❓", "Aleatoire"), ("⛩️", "Ouverte")],
     "Durée de partie": [(NB[3], "3h"), (NB[6], "6h"), (NB[2], "2"), ("♾️", "Jusqu'à CC ou victoire")]
