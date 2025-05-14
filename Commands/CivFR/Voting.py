@@ -17,6 +17,7 @@ class DraftMode(Enum):
     BLIND = "Aveugle"
     RANDOM = "All Random"
     ELDEN = "Elden"
+    NONE = "None"
 
 EMOJI = str
 VOTED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
@@ -44,9 +45,20 @@ RANKED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
     "Catastrophe": [(NB[0], "0"), (NB[1], "1"), (NB[2], "2"), (NB[3], "3"), (NB[4], "4")],
     DRAFT_MODE_TITLE: [("✅", DraftMode.WITH_TRADE.value), ("🚫", DraftMode.NO_TRADE.value), ("🙈", DraftMode.BLIND.value), ("❓", DraftMode.RANDOM.value)]
 }
+VOTED_SETTINGSCIV7 : Dict[str, List[Tuple[EMOJI, str]]] = {
+    "Map": [("🌍", "Continents"), ("➕", "Continents +"), ("🙈", "Terra incognita"), ("🗾", "Fractale"), ("🌊", "Archipel"), ("❓", "Aléatoire")],
+    "Durée de l'âge": [("⏩", "Abrégé"), ("⏯️", "standard"), ("⏪", "long")],
+    "Souvenirs": [("✅", "Activés"), ("❌", "Désactivés")],
+    "Emplacement de départ": [("🗿", "Standard"), ("🏞️", "équilibré")],
+    "Crises": [("✅", "Activés"), ("❌", "Désactivés")],
+    "Intensité des catastrophes naturelles ": [("⛱️ ", "légère"), ("🌨", "modérée"), ("🌋", "catastrophique")],
+    "IA": [("✅", "Activés"), ("❌", "Désactivés")],
+    "Draft": [("🐍", "Serpentine"), ("❓", "Aleatoire"), ("⛩️", "Ouverte")],
+    "Durée de partie": [(NB[3], "3h"), (NB[6], "6h"), (NB[2], "2"), ("♾️", "Jusqu'à CC ou victoire")]
+}
 
 class Voting:
-    def __init__(self, members, settings=VOTED_SETTINGS):
+    def __init__(self, members, settings=VOTED_SETTINGS, default_draft=None):
         self.members = members
         self.members_id = [i.id for i in members]
         self.waiting_members = self.members_id[:]
@@ -54,7 +66,7 @@ class Voting:
         self.result = {i: None for i in self.settings}
         self.majority = len(self.members) // 2 + 1
         self.banned_leaders = []
-        self.draft_mode = None
+        self.draft_mode = default_draft
 
     async def run(self, channel : nextcord.TextChannel, client : nextcord.Client):
         await channel.send("Liste des joueurs: " + ' '.join(i.mention for i in self.members))
@@ -122,6 +134,9 @@ class Voting:
         if self.draft_mode == DraftMode.ELDEN:
             elden_draft = EldenDraft()
             await elden_draft.run(channel, client)
+        if self.draft_mode == DraftMode.NONE:
+            await channel.send("Les joueurs sont prêt, le vote est terminé.")
+
 
 
     @staticmethod
@@ -172,4 +187,14 @@ class CmdCivFRVoting:
             if not members:
                 raise InvalidArgs("Vous devez sois laisser la commande vide, ou bien notifier chacune des personnes participant au vote")
         voting = Voting(members)
+        await voting.run(channel, client)
+
+    async def cmd_vote7(self, *args, member, message : nextcord.Message, channel, client, **_):
+        if not args:
+            members = get_member_in_channel(member.voice)
+        else:
+            members = message.mentions
+            if not members:
+                raise InvalidArgs("Vous devez sois laisser la commande vide, ou bien notifier chacune des personnes participant au vote")
+        voting = Voting(members, settings=VOTED_SETTINGSCIV7, default_draft=DraftMode.NONE)
         await voting.run(channel, client)
