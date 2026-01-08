@@ -20,7 +20,7 @@ class DraftMode(Enum):
     NONE = "None"
 
 EMOJI = str
-VOTED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = VOTED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
+VOTED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
     "Map": [(LETTER.U, "Pangaea Ultima"), (LETTER.P, "Pangée"), (LETTER.C, "Contient & Iles"), (NB[7], "7 mers"), (LETTER.H, "Rich Highlands"), (LETTER.L, "Lacs"), (LETTER.A, "Archipelle"),
             (LETTER.F, "Fractale"), (":island:", "Plateau d'ile"), (":volcano:", "Primordial"), (LETTER.T, "Tilted Axis"), (LETTER.M, "Mer Intérieure"), (":earth_africa:", "Terre"), (":question:", "Aléatoire")],
     "BCY": [(LETTER.M, "Maximum"), (LETTER.S, "Standard")],
