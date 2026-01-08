@@ -22,27 +22,27 @@ class DraftMode(Enum):
 EMOJI = str
 VOTED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
     "Map": [(LETTER.U, "Pangaea Ultima"), (LETTER.P, "Pangée"), (LETTER.C, "Contient & Iles"), (NB[7], "7 mers"), (LETTER.H, "Rich Highlands"), (LETTER.L, "Lacs"), (LETTER.A, "Archipelle"),
-            (LETTER.F, "Fractale"), (":island:", "Plateau d'ile"), (":volcano:", "Primordial"), (LETTER.T, "Tilted Axis"), (LETTER.M, "Mer Intérieure"), (":earth_africa:", "Terre"), (":question:", "Aléatoire")],
+            (LETTER.F, "Fractale"), ("\:island:", "Plateau d'ile"), ("\:volcano:", "Primordial"), (LETTER.T, "Tilted Axis"), (LETTER.M, "Mer Intérieure"), ("\:earth_africa:", "Terre"), ("\:question:", "Aléatoire")],
     "BCY": [(LETTER.M, "Maximum"), (LETTER.S, "Standard")],
-    "Diplo": [("NB[2]", "Normal Diplo"), (":eagle:", "Always War")],
+    "Diplo": [(NB[2], "Normal Diplo"), ("\:eagle:", "Always War")],
     "Catastrophes": [(NB[0], "0"), (NB[1], "1"), (NB[2], "2"), (NB[3], "3"), (NB[4], "4")],
-    "Mode Barbares": [(":no_entry_sign:", "Pas de barbares"), (":crossed_swords:", "Civilisés")],
+    "Barbares": [("\:no_entry_sign:", "Pas de barbares"), ("\:crossed_swords:", "Civilisés")],
     "Goody Huts": [(":white_check_mark:", "Oui"), (":no_entry_sign:", "Non")],
     "Ridges Definition": [(LETTER.C, "Classique"), (LETTER.S, "Standard")],
-    "Merveilles": [(LETTER.A, "Standard"), (LETTER.S, "Standard")],
-    "Mode Draft": [(":white_check_mark:", DraftMode.WITH_TRADE.value), (":no_entry_sign:", DraftMode.NO_TRADE.value)],
+    "Merveilles": [(LETTER.A, "Abondantes"), (LETTER.S, "Standard")],
+    "Mode Draft": [("\:white_check_mark:", DraftMode.WITH_TRADE.value), ("\:no_entry_sign:", DraftMode.NO_TRADE.value)],
 }
 RANKED_SETTINGS : Dict[str, List[Tuple[EMOJI, str]]] = {
     "Map": [(LETTER.U, "Pangaea Ultima"), (LETTER.P, "Pangée"), (LETTER.C, "Contient & Iles"), (NB[7], "7 mers"), (LETTER.H, "Rich Highlands"), (LETTER.L, "Lacs"), (LETTER.A, "Archipelle"),
-            (LETTER.F, "Fractale"), (":island:", "Plateau d'ile"), (":volcano:", "Primordial"), (LETTER.T, "Tilted Axis"), (LETTER.M, "Mer Intérieure"), (":earth_africa:", "Terre"), (":question:", "Aléatoire")],
+            (LETTER.F, "Fractale"), ("\:island:", "Plateau d'ile"), ("\:volcano:", "Primordial"), (LETTER.T, "Tilted Axis"), (LETTER.M, "Mer Intérieure"), ("\:earth_africa:", "Terre"), ("\:question:", "Aléatoire")],
     "BCY": [(LETTER.M, "Maximum"), (LETTER.S, "Standard")],
-    "Diplo": [("NB[2]", "Normal Diplo"), (":eagle:", "Always War")],
+    "Diplo": [(NB[2], "Normal Diplo"), ("\:eagle:", "Always War")],
     "Catastrophes": [(NB[0], "0"), (NB[1], "1"), (NB[2], "2"), (NB[3], "3"), (NB[4], "4")],
-    "Mode Barbares": [(":no_entry_sign:", "Pas de barbares"), (":crossed_swords:", "Civilisés")],
+    "Barbares": [("\:no_entry_sign:", "Pas de barbares"), ("\:crossed_swords:", "Civilisés")],
     "Goody Huts": [(":white_check_mark:", "Oui"), (":no_entry_sign:", "Non")],
     "Ridges Definition": [(LETTER.C, "Classique"), (LETTER.S, "Standard")],
-    "Merveilles": [(LETTER.A, "Standard"), (LETTER.S, "Standard")],
-    "Mode Draft": [(":white_check_mark:", DraftMode.WITH_TRADE.value), (":no_entry_sign:", DraftMode.NO_TRADE.value)],
+    "Merveilles": [(LETTER.A, "Abondantes"), (LETTER.S, "Standard")],
+    "Mode Draft": [("\:white_check_mark:", DraftMode.WITH_TRADE.value), ("\:no_entry_sign:", DraftMode.NO_TRADE.value)],
 }
 VOTED_SETTINGSCIV7 : Dict[str, List[Tuple[EMOJI, str]]] = {
     "Map": [("🌍", "Continents"), ("➕", "Continents +"), ("🙈", "Terra incognita"), ("🗾", "Fractale"), ("🌊", "Archipel"), ("❓", "Aléatoire")],
