@@ -53,7 +53,7 @@ class Leaders:
     def _get_leader_named(self, name) -> Optional[Leader]:
         result = [leader for leader in self if leader == name]
         if len(result) > 1:
-            return None
+            return result[0]
         if result:
             return result[0]
         result = [leader for leader in self if leader.is_in(name)]
