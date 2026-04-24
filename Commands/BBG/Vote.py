@@ -88,6 +88,6 @@ class CmdBBGDisplayVote:
                 break
         else:
             raise NotFound(f"Can't find message in channel <#{SERIOUS_VOTE_ID}> <#{CASUAL_VOTE_ID}>")
-        history = await message.channel.history(after=message).flatten()
+        history = [i async for i in message.channel.history(after=message)]
         for msg in history:
             await self.diplay_vote(msg, channel)

@@ -158,7 +158,7 @@ class Voting:
         await msg.edit(content="En attente de : " + ', '.join(f"<@{i}>" for i in self.waiting_members))
 
     async def is_vote_winner(self, reaction : nextcord.Reaction) -> bool:
-        users = await reaction.users().flatten()
+        users = [i async for i in reaction.users()]
         ls = list(filter(lambda user: user.id in self.members_id, users))
         if len(ls) >= self.majority:
             return True

@@ -31,9 +31,9 @@ class CmdModeration:
         log_channel = client.get_channel(int(args[3]))
 
         print("loading history")
-        history : List[nextcord.Message] = await channel.history(after=channel.get_partial_message(start_msg_id),
+        history : List[nextcord.Message] = [i async for i in channel.history(after=channel.get_partial_message(start_msg_id),
                                         before=channel.get_partial_message(end_msg_id),
-                                        limit=None).flatten()
+                                        limit=None)]
         print(f"Found {len(history)} messages")
         for msg in history:
             print(msg.type)
@@ -94,8 +94,8 @@ class CmdModeration:
             if reason.startswith('!'):
                 reason = MOD_MOVE.format(channel.mention, target.mention,
                                          member.mention, reason[1:])
-        history = await channel.history(after=msg.created_at - datetime.timedelta(milliseconds=1),
-                                        limit=None).flatten()
+        history = [i async for i in channel.history(after=msg.created_at - datetime.timedelta(milliseconds=1),
+                                        limit=None)]
         notified = set()
         for msg in history:
             await move_message(msg, target,

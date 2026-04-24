@@ -446,7 +446,7 @@ async def start_game(message, av):
     while timer - time.time() >= 0 :
         try:
             start_msg = await channel.fetch_message(start_msg.id)
-            ready = await start_msg.reactions[0].users().flatten()
+            ready = [i async for i in start_msg.reactions[0].users()]
             ready = [i.id for i in ready]
             await start_msg.edit(content=\
                 READYCHECK.format(", ".join([MENTION(i) for i in pl if i in ready]),
