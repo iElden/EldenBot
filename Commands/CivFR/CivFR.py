@@ -39,7 +39,7 @@ async def on_message_antibot(client : nextcord.Client, message : nextcord.Messag
         ban_report_channel = client.get_channel(ANTIBOT_REPORT_CHANNEL_ID)
         try:
             await message.delete()
-            await message.author.ban(delete_message_days=1, reason="AntiBot channel - Autoban")
+            await message.author.ban(delete_message_seconds=86400, reason="AntiBot channel - Autoban")
         except nextcord.HTTPException as e:
             await ban_report_channel.send(f"Erreur lors du bannisement automatique de <@{message.author.id}>: {e}")
         else:
