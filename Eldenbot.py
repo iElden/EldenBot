@@ -124,9 +124,9 @@ async def on_message(m):
     elif client.user in m.mentions and m.author != client.user and not m.reference:
         await random_message(client, m)
     try:
+        await on_message_antibot(client, m)
         await civfrlevel_on_message(m)
         await FFATournament.on_report(m)
-        await on_message_antibot(client, m)
     except BotError as e:
         await m.channel.send(f"{type(e).__name__}: {e}")
     except Exception:

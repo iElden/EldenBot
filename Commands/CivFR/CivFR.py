@@ -35,9 +35,10 @@ class CmdCivGeneralFR:
         await channel.send("https://www.youtube.com/watch?v=o2iiCC9nXEc")
 
 async def on_message_antibot(client : nextcord.Client, message : nextcord.Message):
-    if message.channel == ANTIBOT_CHANNEL_ID:
+    if message.channel.id == ANTIBOT_CHANNEL_ID:
         ban_report_channel = client.get_channel(ANTIBOT_REPORT_CHANNEL_ID)
         try:
+            await message.delete()
             await message.author.ban(delete_message_days=1, reason="AntiBot channel - Autoban")
         except nextcord.HTTPException as e:
             await ban_report_channel.send(f"Erreur lors du bannisement automatique de <@{message.author.id}>: {e}")
