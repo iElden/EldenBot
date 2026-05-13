@@ -6,6 +6,8 @@ import json
 import traceback
 from sys import argv
 
+from Commands.CivFR.CivFR import on_message_antibot
+
 logging.basicConfig(level=logging.INFO)
 
 from random_message import *
@@ -124,6 +126,7 @@ async def on_message(m):
     try:
         await civfrlevel_on_message(m)
         await FFATournament.on_report(m)
+        await on_message_antibot(client, m)
     except BotError as e:
         await m.channel.send(f"{type(e).__name__}: {e}")
     except Exception:
