@@ -31,7 +31,9 @@ if __name__ == '__main__':
     from Commands import Command
     command = Command()
 
-client = nextcord.Client(activity=nextcord.Game("type /help for commands"), allowed_mentions=nextcord.AllowedMentions(everyone=False), intents=nextcord.Intents.all())
+intents = nextcord.Intents.all()
+intents.presences = False
+client = nextcord.Client(activity=nextcord.Game("type /help for commands"), allowed_mentions=nextcord.AllowedMentions(everyone=False), intents=intents)
 logger = logging.getLogger("Main")
 
 NO_COMMANDS_SERVER = []
